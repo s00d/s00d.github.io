@@ -1,0 +1,11 @@
+<template>
+  <svg viewBox="0 0 48 48" xmlns='http://www.w3.org/2000/svg' >
+    <title>RevFullscreen Icon</title>
+    <g>
+      <polygon fill="currentColor" points="0,44.34 10.662,33.678 4.52,27.514 20.539,27.514 20.539,43.588 14.316,37.345 3.662,48  "/>
+      <polygon fill="currentColor" points="47.999,44.34 37.338,33.678 43.479,27.514 27.461,27.514 27.461,43.588 33.683,37.345 44.338,48     "/>
+      <polygon fill="currentColor" points="47.999,3.66 37.338,14.322 43.479,20.486 27.461,20.486 27.461,4.411 33.683,10.654 44.338,0  "/>
+      <polygon fill="currentColor" points="0.001,3.66 10.662,14.322 4.521,20.486 20.539,20.486 20.539,4.411 14.317,10.654 3.663,0  "/>
+    </g>
+  </svg>
+</template>

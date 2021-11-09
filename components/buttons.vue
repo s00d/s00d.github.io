@@ -57,7 +57,7 @@ export default class Buttons extends Vue {
 <template>
   <div class="container">
     <span  class='button-container' v-for="(item, i) in buttons" :key="i">
-        <a  class='button' :href="item.href" target='_self' :aria-label="item.aria" rel='noopener noreferrer'>
+        <a class='button' :href="item.href" target='_self' :aria-label="item.aria" rel='noopener noreferrer'>
           <div class='icon'>
 <!--            <component @is="item.icon"></component>-->
             <GitHub v-if="item.icon === 'GitHub'"/>

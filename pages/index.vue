@@ -1,7 +1,8 @@
 <template>
-  <div class='app theme'>
+  <div class='app theme fullscreen-wrapper'>
     aa
     <Toggle :isDark="isDark" @setIsDark="setIsDark" />
+    <Fullscreen :isDark="isDark" />
     <Content />
     <Buttons  />
     <Footer />
@@ -18,6 +19,7 @@ import Content from '../components/content.vue'
 import Buttons from '../components/buttons.vue'
 import Footer from '../components/footer.vue'
 import Background from '../components/background.vue'
+import Fullscreen from '../components/fullscreen.vue'
 
 @Component({
   components: {
@@ -26,6 +28,7 @@ import Background from '../components/background.vue'
     Buttons,
     Footer,
     Background,
+    Fullscreen,
   }
 })
 
