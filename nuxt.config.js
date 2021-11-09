@@ -25,6 +25,7 @@ export default {
       { name: 'og:image:alt', content: 's00d.github.io' },
       { name: 'og:type', content: 'website' },
     ],
+
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
       { rel: 'apple-touch-icon', type: 'image/x-icon', href: '/favicon.ico' },
