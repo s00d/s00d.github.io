@@ -1,31 +1,36 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-import Moon from '../icons/Moon.vue'
-import Sun from '../icons/Sun.vue'
+<script lang="ts">
+import {Component, Prop, Vue} from 'nuxt-property-decorator';
 
-defineProps<{
-  isDark: boolean,
-}>()
+import Moon from './icons/Moon.vue'
+import Sun from './icons/Sun.vue'
 
-const emits = defineEmits<{
-  (eventName: 'setIsDark', hovering: boolean): void
-}>()
+@Component({
+  components: {
+    Moon,
+    Sun
+  }
+})
 
-const count = ref(0)
+export default class Toggle extends Vue {
+  @Prop({type: Boolean, default: true}) private readonly isDark!: boolean
+
+  setIsDark() {
+    this.$emit('setIsDark', !this.isDark)
+  }
+}
 </script>
 
 <template>
-  <main class="container">
-    <input class="toggle" id='toggle' name='toggle' type='checkbox' :checked="isDark" @change="(event) => $emit('setIsDark', !isDark)" />
-    <a class="switch" @click="">
+  <div class="container" @click.stop.prevent="setIsDark">
+    <input class="toggle" id='toggle' name='toggle' type='checkbox' :checked="isDark"  />
+    <a class="switch" @click.stop.prevent="setIsDark">
       <Moon v-if="isDark" />
       <Sun v-else />
     </a>
-  </main>
+  </div>
 </template>
 
 <style lang="scss" scoped>
-@import "../scss/_variables.scss";
 
 .container {
   position: fixed;
@@ -54,8 +59,7 @@ const count = ref(0)
   width: 1.5rem;
   height: 1.5rem;
   padding: 0.75rem;
-  //background-color: t($shadowColor);
-  background-color: $shadowColor;
+  background-color: var(--shadow-color);
   border-radius: 25%;
   box-shadow: 0 0 0.25rem 0.25rem rgba(128, 128, 128, 0.25);
   align-items: center;

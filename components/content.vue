@@ -6,8 +6,6 @@
 </template>
 
 <style lang="scss" scoped>
-@import "../scss/_variables.scss";
-
 .item {
   transition: color 0.5s linear;
   font-weight: normal;
@@ -17,8 +15,7 @@
   .name {
     font-size: 6rem;
     margin: 0 0 3.5rem;
-    //color: t($primaryTextColor);
-    color: $primaryTextColor;
+    color: var(--color-primary);
     @media only screen and (max-device-width: 820px) and (-webkit-min-device-pixel-ratio: 2) {
       font-size: 4.5rem;
     }
@@ -27,8 +24,7 @@
   .title {
     font-size: 3.5rem;
     margin: 4rem 0;
-    //color: t($secondaryTextColor);
-    color: $secondaryTextColor;
+    color: var(--color-secondary);
     @media only screen and (max-device-width: 820px) and (-webkit-min-device-pixel-ratio: 2) {
       font-size: 2.5rem;
     }

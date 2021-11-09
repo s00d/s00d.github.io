@@ -1,5 +1,14 @@
 <script setup lang="ts">
-const isMobile = window.matchMedia('(max-device-width: 820px) and (-webkit-min-device-pixel-ratio: 2)').matches;
+import { Component, Vue } from 'nuxt-property-decorator';
+
+@Component({
+  components: {}
+})
+
+export default class Footer extends Vue {
+  public isMobile = window.matchMedia('(max-device-width: 820px) and (-webkit-min-device-pixel-ratio: 2)').matches;
+
+}
 </script>
 
 <template>
@@ -12,7 +21,6 @@ const isMobile = window.matchMedia('(max-device-width: 820px) and (-webkit-min-d
 </template>
 
 <style lang="scss" scoped>
-@import "../scss/_variables.scss";
 .container {
   position: absolute;
   bottom: 0;
@@ -23,14 +31,12 @@ const isMobile = window.matchMedia('(max-device-width: 820px) and (-webkit-min-d
 
 .text {
   transition: color 0.5s linear;
-  //color: t($tertiaryTextColor);
-  color: $tertiaryTextColor;
+  color: var(--tertiary-secondary);
 }
 
 .link {
   transition: color 0.5s linear;
   text-decoration: none;
-  //color: t($secondaryTextColor);
-  color: $secondaryTextColor;
+  color: var(--color-secondary);
 }
 </style>

@@ -1,42 +1,57 @@
-<script setup lang="ts">
-import GitHub from './../icons/GitHub.vue';
-import LinkedIn from './../icons/LinkedIn.vue';
-import Resume from './../icons/Resume.vue';
-import Email from './../icons/Email.vue';
-import Telegram from './../icons/Telegram.vue';
+<script lang="ts">
+import { Component, Vue } from 'nuxt-property-decorator';
+import GitHub from './icons/GitHub.vue';
+import LinkedIn from './icons/LinkedIn.vue';
+// import Resume from './icons/Resume.vue';
+import Email from './icons/Email.vue';
+import Telegram from './icons/Telegram.vue';
 
-const buttons = [
-  {
-    href: 'https://github.com/s00d/',
-    aria: 'Visit my GitHub profile',
-    icon: 'GitHub',
-    label: 'GitHub',
-  },
-  {
-    href: 'https://www.linkedin.com/in/s00d/',
-    aria: 'Visit my LinkedIn profile',
-    icon: 'LinkedIn',
-    label: 'LinkedIn',
-  },
-  // {
-  //   href: 'https://drive.google.com/drive/folders/10k8NWflSYQ5laPzuWtK3bzUKzuOeas8i/',
-  //   aria: 'Visit Google Drive to view and download my resume',
-  //   icon: 'Resume',
-  //   label: 'Resume',
-  // },
-  {
-    href: 'mailto:Virus191288@gmail.com',
-    aria: 'Send me an email with this template',
-    icon: 'Email',
-    label: 'Email',
-  },
-  {
-    href: 'tg://resolve?domain=is_s00d',
-    aria: 'Send me Telegram message',
-    icon: 'Telegram',
-    label: 'Telegram',
+@Component({
+  components: {
+    GitHub,
+    LinkedIn,
+    Email,
+    Telegram,
   }
-]
+})
+
+export default class Buttons extends Vue {
+  private buttons = [
+    {
+      href: 'https://github.com/s00d/',
+      aria: 'Visit my GitHub profile',
+      icon: 'GitHub',
+      label: 'GitHub',
+    },
+    {
+      href: 'https://www.linkedin.com/in/s00d/',
+      aria: 'Visit my LinkedIn profile',
+      icon: 'LinkedIn',
+      label: 'LinkedIn',
+    },
+    // {
+    //   href: 'https://drive.google.com/drive/folders/10k8NWflSYQ5laPzuWtK3bzUKzuOeas8i/',
+    //   aria: 'Visit Google Drive to view and download my resume',
+    //   icon: 'Resume',
+    //   label: 'Resume',
+    // },
+    {
+      href: 'mailto:Virus191288@gmail.com',
+      aria: 'Send me an email with this template',
+      icon: 'Email',
+      label: 'Email',
+    },
+    {
+      href: 'tg://resolve?domain=is_s00d',
+      aria: 'Send me Telegram message',
+      icon: 'Telegram',
+      label: 'Telegram',
+    }
+  ];
+
+
+}
+
 </script>
 
 <template>
@@ -47,7 +62,7 @@ const buttons = [
 <!--            <component @is="item.icon"></component>-->
             <GitHub v-if="item.icon === 'GitHub'"/>
             <LinkedIn v-if="item.icon === 'LinkedIn'"/>
-            <Resume v-if="item.icon === 'Resume'"/>
+<!--            <Resume v-if="item.icon === 'Resume'"/>-->
             <Email v-if="item.icon === 'Email'"/>
             <Telegram v-if="item.icon === 'Telegram'"/>
           </div>
@@ -58,8 +73,6 @@ const buttons = [
 </template>
 
 <style lang="scss" scoped>
-@import "../scss/_variables.scss";
-
 .container {
   a,
   a:active,
@@ -78,8 +91,7 @@ const buttons = [
     transition: color 0.5s linear;
     height: 6rem;
     width: 6rem;
-    //color: t($primaryTextColor);
-    color: $primaryTextColor;
+    color: var(--color-primary);
     display: table-cell;
     vertical-align: middle;
     text-align: center;
@@ -100,8 +112,7 @@ const buttons = [
   }
 
   .button:hover {
-    //background-color: t($shadowColor);
-    background-color: $shadowColor;
+    background-color: var(--shadow-color);
     box-shadow: 0 0 0.75rem 0.75rem rgba(128, 128, 128, 0.25);
   }
 

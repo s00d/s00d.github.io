@@ -1,0 +1,16 @@
+.dark-mode {
+  --color: #FFF;
+  --color-primary: #FFF;
+  --color-secondary: #CCC;
+  --tertiary-secondary: #999;
+  --bg: #000;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+}
+.white-mode {
+  --color: #000;
+  --color-primary: #000;
+  --color-secondary: #333;
+  --tertiary-secondary: #777;
+  --bg: #FFF;
+  --shadow-color: rgba(255, 255, 255, 0.5);
+}

@@ -1,21 +1,31 @@
 {
-  "name": "s00d",
-  "version": "0.0.0",
+  "name": "my-resume",
+  "version": "1.0.0",
+  "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
-    "serve": "vite preview"
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "deploy": "push-dir --dir=dist --branch=gh-pages --cleanup"
   },
   "dependencies": {
-    "@highlightjs/vue-plugin": "^2.1.0",
-    "particles.vue3": "^1.20.3",
-    "tsparticles": "^1.37.3",
-    "vue": "^3.2.16"
+    "@nuxt/content": "^1.14.0",
+    "core-js": "^3.15.1",
+    "nuxt": "^2.15.8",
+    "nuxt-property-decorator": "^2.9.1",
+    "particles.vue": "^2.20.3",
+    "vue-particles": "^1.0.9"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^1.9.3",
-    "typescript": "^4.4.3",
-    "vite": "^2.6.4",
-    "vue-tsc": "^0.3.0"
+    "@nuxt/types": "^2.15.7",
+    "@nuxt/typescript-build": "^2.1.0",
+    "@nuxtjs/color-mode": "^2.1.1",
+    "@nuxtjs/pwa": "^3.3.5",
+    "@nuxtjs/style-resources": "^1.2.1",
+    "fibers": "^5.0.0",
+    "node-sass": "^5.0.0",
+    "push-dir": "^0.4.1",
+    "sass-loader": "^10.2.0"
   }
 }
