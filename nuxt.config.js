@@ -18,7 +18,7 @@ export default {
       { name: 'og:site_name', content: 'Personal Website' },
       { name: 'og:url', content: 'https://s00d.github.io/' },
       { name: 'og:locale', content: 'en_US' },
-      { name: 'og:image', content: 'https://git.io/JXzzH' },
+      { name: 'og:image', content: 'https://git.io/JXw4X' },
       { name: 'og:image:type', content: 'image/png' },
       { name: 'og:image:width', content: '1280' },
       { name: 'og:image:height', content: '640' },
