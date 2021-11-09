@@ -32,6 +32,19 @@ export default {
     ]
   },
 
+
+  sitemap: {
+    hostname: "https://s00d.github.io",
+    gzip: true,
+    exclude: ["/admin/**"]
+  },
+  robots: [
+    {
+      UserAgent: 'Googlebot',
+      Disallow: () => '/admin' // accepts function
+    }
+  ],
+
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
   ],
@@ -50,6 +63,7 @@ export default {
     '@nuxt/typescript-build',
     '@nuxtjs/color-mode',
     '@nuxtjs/style-resources',
+    // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
   ],
 
@@ -62,11 +76,23 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    // https://go.nuxtjs.dev/pwa
-    '@nuxtjs/pwa',
     // https://go.nuxtjs.dev/content
     '@nuxt/content',
+
+
+    '@nuxtjs/sitemap',
+    '@nuxtjs/robots',
+    '@nuxtjs/toast',
+    'nuxt-speedkit'
   ],
+
+  toast: {
+    position: "top-center",
+  },
+
+  speedkit: {
+    // Options
+  },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
