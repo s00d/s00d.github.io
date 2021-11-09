@@ -2,35 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fbdf33e5-867b-4d6b-90a2-2b27d0f6b247" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.editorconfig" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/scss/_mixins.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/scss/_variables.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/background.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/buttons.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/content.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/footer.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/icons/Email.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/icons/GitHub.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/icons/LinkedIn.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/icons/Moon.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/icons/Resume.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/icons/Sun.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/icons/Telegram.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/toggle.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/content/hello.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nuxt.config.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pages/index.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/vue-particles.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/favicon.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/icon.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/logo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/manifest.webmanifest" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/store/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/deploy.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/deploy.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nuxt.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/nuxt.config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,6 +60,42 @@
       <option name="presentableId" value="Default" />
       <updated>1636444999477</updated>
     </task>
+    <task id="LOCAL-00001" summary="change nuxt">
+      <created>1636451378656</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1636451378656</updated>
+    </task>
+    <task id="LOCAL-00002" summary="fix">
+      <created>1636451734915</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1636451734915</updated>
+    </task>
+    <task id="LOCAL-00003" summary="clean">
+      <created>1636451784169</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1636451784169</updated>
+    </task>
+    <task id="LOCAL-00004" summary="test">
+      <created>1636451821656</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1636451821656</updated>
+    </task>
+    <task id="LOCAL-00005" summary="fix">
+      <created>1636452610196</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1636452610196</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -93,5 +103,12 @@
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="change nuxt" />
+    <MESSAGE value="clean" />
+    <MESSAGE value="test" />
+    <MESSAGE value="fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix" />
   </component>
 </project>

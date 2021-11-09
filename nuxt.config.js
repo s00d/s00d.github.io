@@ -10,26 +10,25 @@ export default {
     title: 'Pavel Kuz\'min',
     meta: [
       { charset: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: 'Source: https://github.com/s00d/s00d.github.io' },
-      { hid: 'keywords', name: 'keywords', content: 'Pavel Kuz\'min, Pavel, Kuz\'min, pavelkuzmin, s00d, backend developer, frontend developer' },
-      { name: 'author', content: 'Pavel Kuz\'min' },
-      { name: 'format-detection', content: 'telephone=no' },
-      { name: 'og:site_name', content: 'Personal Website' },
-      { name: 'og:url', content: 'https://s00d.github.io/' },
-      { name: 'og:locale', content: 'en_US' },
-      { name: 'og:image', content: 'https://git.io/JXw4X' },
-      { name: 'og:image:type', content: 'image/png' },
-      { name: 'og:image:width', content: '1280' },
-      { name: 'og:image:height', content: '640' },
-      { name: 'og:image:alt', content: 's00d.github.io' },
-      { name: 'og:type', content: 'website' },
+      // { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      // { hid: 'description', name: 'description', content: 'Source: https://github.com/s00d/s00d.github.io' },
+      // { hid: 'keywords', name: 'keywords', content: 'Pavel Kuz\'min, Pavel, Kuz\'min, pavelkuzmin, s00d, backend developer, frontend developer' },
+      // { name: 'author', content: 'Pavel Kuz\'min' },
+      // { name: 'format-detection', content: 'telephone=no' },
+      // { name: 'og:site_name', content: 'Personal Website' },
+      // { name: 'og:url', content: 'https://s00d.github.io/' },
+      // { name: 'og:locale', content: 'en_US' },
+      // { name: 'og:image', content: 'https://git.io/JXw4X' },
+      // { name: 'og:image:type', content: 'image/png' },
+      // { name: 'og:image:width', content: '1280' },
+      // { name: 'og:image:height', content: '640' },
+      // { name: 'og:image:alt', content: 's00d.github.io' },
+      // { name: 'og:type', content: 'website' },
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
-      { rel: 'apple-touch-icon', type: 'image/x-icon', href: '/favicon.ico' },
-      { rel: 'canonical', href: 'https://s00d.github.io' },
-      { rel: 'manifest', href: '/manifest.webmanifest' },
+      // { rel: 'apple-touch-icon', type: 'image/x-icon', href: '/favicon.ico' },
+      // { rel: 'canonical', href: 'https://s00d.github.io' },
     ]
   },
 
@@ -71,9 +70,43 @@ export default {
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
+    icon: {
+      /* icon options */
+    },
+    meta: {
+      name: 'Personal Website',
+      author: 'Pavel Kuz\'min',
+      description: 'Source: https://github.com/s00d/s00d.github.io',
+      theme_color: '#000',
+      lang: 'en',
+      ogType: 'website',
+      ogSiteName: 'Pavel Kuz\'min',
+      ogTitle: 'Personal Website',
+      ogDescription: 'Source: https://github.com/s00d/s00d.github.io',
+
+      ogImage: {
+        path: 'https://git.io/JXw4X',
+        width: 1280,
+        height: 640,
+        type: 'image/png',
+      },
+      ogUrl: 'https://s00d.github.io/',
+    },
     manifest: {
-      lang: 'en'
-    }
+      name: 'Personal Website',
+      short_name: 'Pavel Kuz\'min',
+      lang: 'en',
+      icons: [
+        {
+          src: "favicon.svg",
+          sizes: "64x64 32x32 24x24 16x16",
+          type: "image/x-icon"
+        }
+      ],
+      background_color: '#000',
+      theme_color: '#000',
+      useWebmanifestExtension: true,
+    },
   },
 
   // Content module configuration: https://go.nuxtjs.dev/config-content
