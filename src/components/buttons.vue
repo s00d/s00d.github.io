@@ -3,6 +3,7 @@ import GitHub from './../icons/GitHub.vue';
 import LinkedIn from './../icons/LinkedIn.vue';
 import Resume from './../icons/Resume.vue';
 import Email from './../icons/Email.vue';
+import Telegram from './../icons/Telegram.vue';
 
 const buttons = [
   {
@@ -28,6 +29,12 @@ const buttons = [
     aria: 'Send me an email with this template',
     icon: 'Email',
     label: 'Email',
+  },
+  {
+    href: 'tg://resolve?domain=is_s00d',
+    aria: 'Send me Telegram message',
+    icon: 'Telegram',
+    label: 'Telegram',
   }
 ]
 </script>
@@ -37,10 +44,12 @@ const buttons = [
     <span  class='button-container' v-for="(item, i) in buttons" :key="i">
         <a  class='button' :href="item.href" target='_self' :aria-label="item.aria" rel='noopener noreferrer'>
           <div class='icon'>
+<!--            <component @is="item.icon"></component>-->
             <GitHub v-if="item.icon === 'GitHub'"/>
             <LinkedIn v-if="item.icon === 'LinkedIn'"/>
             <Resume v-if="item.icon === 'Resume'"/>
             <Email v-if="item.icon === 'Email'"/>
+            <Telegram v-if="item.icon === 'Telegram'"/>
           </div>
           <span class='icon_title' v-text="item.label"></span>
         </a>
