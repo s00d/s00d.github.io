@@ -1,7 +1,7 @@
 {
   "name": "Personal Website",
   "short_name": "Pavel Kuz'min",
-  "description": "## Build Setup",
+  "description": "Web [Site](https://s00d.github.io) to showcase projects and profile links.",
   "icons": [
     {
       "src": "favicon.svg",
