@@ -1,4 +1,6 @@
-# my-resume
+# Welcome to my GitHub Page
+
+Web [Site](https://s00d.github.io) to showcase projects and profile links.
 
 ## Build Setup
 
