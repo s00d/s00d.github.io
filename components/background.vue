@@ -138,7 +138,7 @@ export default class Background extends Vue {
           },
           trail: {
             enable: true,
-            length: 20,
+            length: 30,
             fillColor: {
               value: this.isDark ? '#232323' : '#dcdcdc'
             }
@@ -206,6 +206,7 @@ export default class Background extends Vue {
       retina_detect: true,
       fpsLimit: 60,
 
+      detectRetina: true,
 
       absorbers: {
         color: {
