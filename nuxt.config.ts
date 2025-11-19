@@ -50,6 +50,11 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.cache'
       }
+    },
+    prerender: {
+      // Предварительно рендерим API роут для сохранения данных как JSON
+      routes: ['/api/projects.json'],
+      crawlLinks: false
     }
   },
 

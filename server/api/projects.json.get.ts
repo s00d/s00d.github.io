@@ -1,4 +1,4 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, setResponseHeader } from 'h3'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -8,6 +8,9 @@ export default defineEventHandler(async (event) => {
   const storage = useStorage('cache')
   const cacheKey = `github-projects-${username}`
   const cacheTTL = 24 * 60 * 60 * 1000 // 24 часа в миллисекундах
+
+  // Устанавливаем заголовок для статической генерации
+  setResponseHeader(event, 'Content-Type', 'application/json')
 
   try {
     // Проверяем кеш

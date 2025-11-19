@@ -1,8 +1,20 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
-// Получаем данные с нашего API
-const { data: projects, pending } = await useFetch('/api/projects')
+// Получаем данные с нашего API (при генерации будет сохранен в статический файл)
+const { data: projects, pending } = await useFetch('/api/projects.json', {
+  default: () => [] as Array<{
+    id: number
+    name: string
+    description: string | null
+    stars: number
+    forks: number
+    language: string | null
+    url: string
+    homepage: string | null
+    topics: string[]
+  }>
+})
 
 const links = [
   { name: 'GitHub', url: 'https://github.com/s00d', icon: 'lucide:github' },
