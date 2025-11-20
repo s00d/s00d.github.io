@@ -5,9 +5,91 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fbdf33e5-867b-4d6b-90a2-2b27d0f6b247" name="Changes" comment="update">
-      <change beforePath="$PROJECT_DIR$/nuxt.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/nuxt.config.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/config.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/constants/states.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/economy.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/BlackHole.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/Entity.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/FloatingText.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/Meteor.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/Particle.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/PowerUp.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/Ship.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/Shockwave.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/Star.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/VoidSerpent.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/blackhole/BlackHoleState.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/blackhole/ExplodingState.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/blackhole/ReformingState.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/blackhole/StableState.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/entities/blackhole/UnstableState.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/factories/PowerUpFactory.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/generators/ShipVisualGenerator.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/index.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/projectiles/BombProjectile.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/projectiles/HomingMissile.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/projectiles/LinearProjectile.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/projectiles/PatternProjectile.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/projectiles/Projectile.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/renderer/Renderer.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/renderer/SpaceCracks.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/services/CanvasService.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/services/CollisionService.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/services/CritService.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/services/DamageService.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/services/EconomyService.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/services/GravityService.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/simulation.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/types.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/ui/CoinReward.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/ui/CooldownBar.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/ui/DamageNumber.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/ui/FuelBar.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/ui/HealthBar.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/ui/ShieldBar.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/BombUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/DamageBoostUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/HealUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/RangeUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/RapidFireUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/RegenUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/ShieldUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/SizeDownUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/SizeUpUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/SlowDownUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/SpeedBoostUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/TeleportUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/Upgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/UpgradeFactory.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/WeaponJamUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/upgrades/WeaponUpgrade.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/utils/glow.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/utils/graphicsCache.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/utils/math.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/utils/navigator.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/weapons/Blaster.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/weapons/FlakCannon.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/weapons/Minigun.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/weapons/MissileLauncher.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/weapons/PlasmaGun.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/weapons/Railgun.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/weapons/Shotgun.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/weapons/SniperRifle.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/weapons/WaveGun.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/background/weapons/Weapon.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/android-chrome-192x192.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/android-chrome-512x512.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/apple-touch-icon.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/favicon-16x16.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/favicon-32x32.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/favicon.ico" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/site.webmanifest" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pages/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/pages/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/api/projects.get.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,25 +108,25 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "s00d"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;s00d&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/s00d/s00d.github.io.git",
-    "accountId": "2a52f613-e1d1-45c7-9277-a5951756695f"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/s00d/s00d.github.io.git&quot;,
+    &quot;accountId&quot;: &quot;2a52f613-e1d1-45c7-9277-a5951756695f&quot;
   }
-}]]></component>
+}</component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="v400880g" />
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 8.1" />
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 8
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
   <component name="ProjectId" id="20foRz7xlZlxFNu2fGVrQ8AoifE" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -55,7 +137,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "/Users/s00d/packeges/s00d.github.io/public/models",
+    "last_opened_file_path": "/Users/s00d/packeges/s00d.github.io/public",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -68,11 +150,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/public" />
       <recent name="$PROJECT_DIR$/public/models" />
       <recent name="$PROJECT_DIR$/assets/models" />
       <recent name="$PROJECT_DIR$/static" />
       <recent name="$PROJECT_DIR$/components/icons" />
-      <recent name="$PROJECT_DIR$/components" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/public/models" />
