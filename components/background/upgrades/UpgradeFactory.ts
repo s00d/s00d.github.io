@@ -13,6 +13,7 @@ import { TeleportUpgrade } from './TeleportUpgrade'
 import { BombUpgrade } from './BombUpgrade'
 import { RangeUpgrade } from './RangeUpgrade'
 import { WeaponUpgrade } from './WeaponUpgrade'
+import { CoinUpgrade } from './CoinUpgrade'
 import { Minigun } from '../weapons/Minigun'
 import { Shotgun } from '../weapons/Shotgun'
 import { Railgun } from '../weapons/Railgun'
@@ -39,6 +40,7 @@ export class UpgradeFactory {
     this.upgrades.set('GET_TELEPORT', new TeleportUpgrade())
     this.upgrades.set('UPGRADE_BOMB', new BombUpgrade())
     this.upgrades.set('UPGRADE_RANGE', new RangeUpgrade())
+    this.upgrades.set('COIN', new CoinUpgrade())
     
     // Оружие
     this.upgrades.set('GET_MINIGUN', new WeaponUpgrade('GET_MINIGUN', Minigun, '∴', 5))

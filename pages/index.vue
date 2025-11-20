@@ -34,6 +34,11 @@ const toggleUI = () => {
   showUI.value = !showUI.value
 }
 
+// Обработчики для предотвращения всплытия событий на canvas
+const stopPropagation = (e: Event) => {
+  e.stopPropagation()
+}
+
 onMounted(() => {
   let i = 0
   const typeInterval = setInterval(() => {
@@ -54,8 +59,10 @@ onMounted(() => {
 
     <!-- Кнопка переключения интерфейса -->
     <button
-      @click="toggleUI"
-      class="fixed top-4 right-4 z-50 w-12 h-12 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-110 group"
+      @click.stop="toggleUI"
+      @touchstart.stop="stopPropagation"
+      @touchend.stop.prevent="toggleUI"
+      class="fixed top-4 right-4 z-50 w-12 h-12 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full border border-white/20 hover:bg-white/20 active:bg-white/20 transition-all duration-300 hover:scale-110 group touch-manipulation"
       :title="showUI ? 'Скрыть интерфейс' : 'Показать интерфейс'"
     >
       <Icon
@@ -90,7 +97,9 @@ onMounted(() => {
           <!-- Social Links -->
           <div class="flex flex-wrap gap-4 animate-fade-in-up" style="animation-delay: 300ms;">
             <a v-for="link in links" :key="link.name" :href="link.url" target="_blank"
-               class="group flex items-center space-x-2 px-5 py-3 bg-surface/50 backdrop-blur-md rounded-full hover:bg-white/10 border border-white/10 hover:border-primary/50 transition-all duration-300 hover:scale-105">
+               @touchstart.stop="stopPropagation"
+               @touchend.stop="stopPropagation"
+               class="group flex items-center space-x-2 px-5 py-3 bg-surface/50 backdrop-blur-md rounded-full hover:bg-white/10 active:bg-white/10 border border-white/10 hover:border-primary/50 transition-all duration-300 hover:scale-105 touch-manipulation">
               <Icon :name="link.icon" class="w-5 h-5 text-gray-300 group-hover:text-primary transition-colors" />
               <span class="font-medium">{{ link.name }}</span>
             </a>
@@ -107,7 +116,10 @@ onMounted(() => {
               </h2>
               <p class="text-gray-400 text-sm">Open source contributions and personal labs</p>
             </div>
-            <a href="https://github.com/s00d?tab=repositories" target="_blank" class="hidden md:flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors group">
+            <a href="https://github.com/s00d?tab=repositories" target="_blank"
+               @touchstart.stop="stopPropagation"
+               @touchend.stop="stopPropagation"
+               class="hidden md:flex items-center gap-2 text-sm text-gray-400 hover:text-white active:text-white transition-colors group touch-manipulation">
               View all on GitHub
               <Icon name="lucide:arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </a>
@@ -128,7 +140,10 @@ onMounted(() => {
           </div>
 
           <div class="mt-12 text-center md:hidden">
-             <a href="https://github.com/s00d?tab=repositories" target="_blank" class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors border border-white/10 px-6 py-3 rounded-full">
+             <a href="https://github.com/s00d?tab=repositories" target="_blank"
+                @touchstart.stop="stopPropagation"
+                @touchend.stop="stopPropagation"
+                class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white active:text-white transition-colors border border-white/10 px-6 py-3 rounded-full touch-manipulation">
               View all on GitHub
               <Icon name="lucide:arrow-right" class="w-4 h-4" />
             </a>

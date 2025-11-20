@@ -3,6 +3,7 @@ import { CONFIG } from './config'
 
 export const economy = reactive({
   coins: 0,
+  darkMatter: 0, // Black hole currency (global)
 
   // УРОВНИ (Начальные значения)
   shipsCount: 4,      // Старт: 4
@@ -13,7 +14,12 @@ export const economy = reactive({
   shieldLevel: 0,     // Старт: 0
   critLevel: 0,
   regenLevel: 0,
-  magnetLevel: 1
+  magnetLevel: 1,
+
+  // Black Hole Debuffs (purchased by player with coins)
+  blackHoleSerpentCostDebuff: 0,      // Increases serpent base cost (+50 per level)
+  blackHoleBalanceRateDebuff: 0,       // Decreases dark matter accumulation rate (-10 per level)
+  blackHoleDarkMatterRateDebuff: 0     // Decreases dark matter accumulation rate (-5 per level)
 })
 
 // РАСЧЕТ СТОИМОСТИ (Экспоненциальный рост)
@@ -37,7 +43,12 @@ export const costs = computed(() => {
     // 4. ТЕХНОЛОГИИ (Special). База 500. Рост x1.6 (быстрый)
     crit: calc(500, 1.6, economy.critLevel),
     regen: calc(600, 1.6, economy.regenLevel),
-    magnet: calc(300, 1.5, economy.magnetLevel - 1)
+    magnet: calc(300, 1.5, economy.magnetLevel - 1),
+
+    // 5. BLACK HOLE DEBUFFS (purchased with coins)
+    blackHoleSerpentCost: calc(400, 1.5, economy.blackHoleSerpentCostDebuff),
+    blackHoleBalanceRate: calc(500, 1.6, economy.blackHoleBalanceRateDebuff),
+    blackHoleDarkMatterRate: calc(600, 1.7, economy.blackHoleDarkMatterRateDebuff)
   }
 })
 
@@ -59,6 +70,9 @@ export const buyUpgrade = (type: keyof typeof costs.value) => {
     else if (type === 'crit') economy.critLevel++
     else if (type === 'regen') economy.regenLevel++
     else if (type === 'magnet') economy.magnetLevel++
+    else if (type === 'blackHoleSerpentCost') economy.blackHoleSerpentCostDebuff++
+    else if (type === 'blackHoleBalanceRate') economy.blackHoleBalanceRateDebuff++
+    else if (type === 'blackHoleDarkMatterRate') economy.blackHoleDarkMatterRateDebuff++
   }
 }
 

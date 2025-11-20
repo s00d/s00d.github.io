@@ -3,6 +3,7 @@ import { BHState } from '../types'
 import { MathUtils } from '../utils/math'
 import type { BlackHole } from '../entities/BlackHole'
 import type { Meteor } from '../entities/Meteor'
+import type { BigMeteor } from '../entities/BigMeteor'
 import type { Ship } from '../entities/Ship'
 import type { PowerUp } from '../entities/PowerUp'
 import type { Projectile } from '../projectiles/Projectile'
@@ -13,6 +14,7 @@ import type { VoidSerpent } from '../entities/VoidSerpent'
 import { applyGlow } from '../utils/glow'
 import { SHIP_STATE } from '../constants/states'
 import { UpgradeFactory } from '../upgrades/UpgradeFactory'
+import { HealthBar } from '../ui/HealthBar'
 
 export class Renderer {
   ctx: CanvasRenderingContext2D
@@ -73,6 +75,7 @@ export class Renderer {
 
     // 3. Ядро дыры (красивая анимация)
     this.drawBlackHoleCore(bh)
+
   }
 
   private drawBlackHoleCore(bh: BlackHole) {
@@ -94,22 +97,22 @@ export class Renderer {
     this.ctx.fillStyle = '#000000'
     this.ctx.fill()
 
-    // B. Фотонное кольцо (тонкое яркое кольцо внутри)
+    // B. Photon ring (thin bright ring inside)
     this.ctx.beginPath()
     this.ctx.arc(0, 0, r * 0.95, 0, Math.PI * 2)
-    this.ctx.strokeStyle = '#ffffff' // Чистый белый свет
+    this.ctx.strokeStyle = '#ffffff' // Pure white light
     this.ctx.lineWidth = 2
     this.ctx.shadowBlur = 10
     this.ctx.shadowColor = coreColor
     this.ctx.stroke()
     this.ctx.shadowBlur = 0
 
-    // C. Эффект линзирования (внутреннее искажение)
-    // Создаем "воронку" внутри
+    // C. Lensing effect (inner distortion)
+    // Create "funnel" inside
     const innerG = this.ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.9)
     innerG.addColorStop(0, '#000000')
     innerG.addColorStop(0.6, 'rgba(0,0,0,0.8)')
-    innerG.addColorStop(1, coreColor) // Цвет по краям
+    innerG.addColorStop(1, coreColor) // Color at edges
 
     this.ctx.globalAlpha = 0.3
     this.ctx.fillStyle = innerG
@@ -126,17 +129,63 @@ export class Renderer {
        const offset = bh.shake * 0.5
        this.ctx.translate(MathUtils.randomRange(-offset, offset), MathUtils.randomRange(-offset, offset))
     }
-    this.ctx.rotate(Date.now() * 0.0002) // Простое время
-    const color = bh.state === BHState.UNSTABLE ? CONFIG.COLORS.danger : CONFIG.COLORS.primary
+    this.ctx.rotate(Date.now() * 0.0002)
 
-    for (let orbit = 1; orbit <= 3; orbit++) {
-      const r = bh.visualRadius + orbit * 20; const count = 4 + orbit * 2
-      this.ctx.beginPath(); this.ctx.arc(0, 0, r, 0, Math.PI * 2); this.ctx.strokeStyle = color; this.ctx.lineWidth = 1; this.ctx.globalAlpha = 0.1; this.ctx.stroke()
-      for (let i = 0; i < count; i++) {
-        const a = (Math.PI * 2 * i) / count + (Date.now() * 0.001) * (0.5/orbit) * (orbit%2===0?1:-1)
-        this.ctx.beginPath(); this.ctx.arc(Math.cos(a)*r, Math.sin(a)*r, 4, 0, Math.PI * 2); this.ctx.fillStyle = color; this.ctx.globalAlpha = 0.8; this.ctx.fill()
-      }
+    // Calculate total upgrades and create upgrade points
+    const upgrades = bh.upgrades
+    const upgradePoints: Array<{ type: string; color: string }> = []
+
+    // Add upgrade points based on levels (приглушенные цвета)
+    for (let i = 0; i < upgrades.serpentBaseCost; i++) {
+      upgradePoints.push({ type: 'serpentBaseCost', color: '#d4a017' }) // Приглушенное золото
     }
+    for (let i = 0; i < upgrades.serpentHealth; i++) {
+      upgradePoints.push({ type: 'serpentHealth', color: '#0d8f5e' }) // Приглушенный зеленый
+    }
+    for (let i = 0; i < upgrades.serpentSpeed; i++) {
+      upgradePoints.push({ type: 'serpentSpeed', color: '#2d5aa0' }) // Приглушенный синий
+    }
+    for (let i = 0; i < upgrades.serpentDamage; i++) {
+      upgradePoints.push({ type: 'serpentDamage', color: '#c53030' }) // Приглушенный красный
+    }
+    for (let i = 0; i < upgrades.balanceRate; i++) {
+      upgradePoints.push({ type: 'balanceRate', color: '#6d28d9' }) // Приглушенный фиолетовый
+    }
+
+    // Draw upgrade points on accretion disk
+    if (upgradePoints.length > 0) {
+      const baseRadius = bh.visualRadius + 25
+      const timeOffset = Date.now() * 0.001
+      const orbitCount = 3
+      const orbitSpacing = 15
+
+      // Рисуем максимум 3 круга-орбиты
+      for (let i = 0; i < orbitCount; i++) {
+        const orbitRadius = baseRadius + i * orbitSpacing
+        this.ctx.beginPath()
+        this.ctx.arc(0, 0, orbitRadius, 0, Math.PI * 2)
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)' // Полупрозрачные белые орбиты
+        this.ctx.lineWidth = 1
+        this.ctx.stroke()
+      }
+
+      // Рисуем точки улучшений
+      upgradePoints.forEach((point, index) => {
+        const angle = (Math.PI * 2 * index) / upgradePoints.length + timeOffset * 0.3
+        const radius = baseRadius + (index % orbitCount) * orbitSpacing
+
+        this.ctx.beginPath()
+        this.ctx.arc(Math.cos(angle) * radius, Math.sin(angle) * radius, 5, 0, Math.PI * 2)
+        this.ctx.fillStyle = point.color
+        this.ctx.globalAlpha = 0.7 // Немного уменьшили прозрачность
+        this.ctx.shadowBlur = 6 // Уменьшили свечение
+        this.ctx.shadowColor = point.color
+        this.ctx.fill()
+        this.ctx.shadowBlur = 0
+        this.ctx.globalAlpha = 1
+      })
+    }
+
     this.ctx.restore()
   }
 
@@ -160,6 +209,82 @@ export class Renderer {
     this.ctx.beginPath(); this.ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2); this.ctx.fillStyle = m.color
     if (m.gravityFactor < 0) { this.ctx.shadowBlur = 8; this.ctx.shadowColor = m.color }
     this.ctx.fill(); this.ctx.shadowBlur = 0
+  }
+
+  drawBigMeteor(bm: BigMeteor, warpFactor: number) {
+    this.ctx.save()
+
+    // Trail с эффектом свечения
+    if (bm.trail.length > 1) {
+      const first = bm.trail[0]
+      if (first) {
+        // Градиент для trail
+        const gradient = this.ctx.createLinearGradient(first.x, first.y, bm.x, bm.y)
+        gradient.addColorStop(0, 'transparent')
+        gradient.addColorStop(0.5, `${bm.color}80`)
+        gradient.addColorStop(1, bm.color)
+
+        this.ctx.beginPath()
+        this.ctx.moveTo(first.x, first.y)
+        for (let i = 1; i < bm.trail.length; i++) {
+          const t = bm.trail[i]
+          if (t) this.ctx.lineTo(t.x, t.y)
+        }
+
+        applyGlow(this.ctx, { color: bm.color, blur: 15, intensity: 0.6 })
+        this.ctx.strokeStyle = gradient
+        this.ctx.lineWidth = 3
+        this.ctx.globalAlpha = 0.6
+        this.ctx.stroke()
+        this.ctx.globalAlpha = 1
+      }
+    }
+
+    // Тело метеорита с вращением
+    this.ctx.translate(bm.x, bm.y)
+    this.ctx.rotate(bm.rotation)
+
+    // Неоновое свечение
+    applyGlow(this.ctx, { color: bm.color, blur: 20, intensity: 0.8 })
+
+    // Отрисовка формы из visualConfig
+    if (bm.visualConfig && bm.visualConfig.points.length > 0) {
+      this.ctx.beginPath()
+      const firstPoint = bm.visualConfig.points[0]
+      if (firstPoint) {
+        this.ctx.moveTo(firstPoint.x, firstPoint.y)
+        for (const point of bm.visualConfig.points) {
+          this.ctx.lineTo(point.x, point.y)
+        }
+        this.ctx.closePath()
+        this.ctx.fillStyle = bm.color
+        this.ctx.fill()
+      }
+    } else {
+      // Fallback на круг, если нет visualConfig
+      this.ctx.beginPath()
+      this.ctx.arc(0, 0, bm.size, 0, Math.PI * 2)
+      this.ctx.fillStyle = bm.color
+      this.ctx.fill()
+    }
+
+    this.ctx.restore()
+
+    // Отображение здоровья над большим метеоритом
+    if (bm.hp < bm.maxHp) {
+      const barWidth = bm.size * 3
+      const barHeight = 4
+      const uiOffset = bm.size + 15
+
+      // Фон бара
+      this.ctx.fillStyle = 'rgba(0,0,0,0.6)'
+      this.ctx.fillRect(bm.x - barWidth / 2, bm.y - uiOffset, barWidth, barHeight)
+
+      // Полоса здоровья
+      const hpRatio = Math.max(0, Math.min(1, bm.hp / bm.maxHp))
+      this.ctx.fillStyle = '#00ff00'
+      this.ctx.fillRect(bm.x - barWidth / 2, bm.y - uiOffset, barWidth * hpRatio, barHeight)
+    }
   }
 
   drawShip(s: Ship) {

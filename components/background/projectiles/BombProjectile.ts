@@ -41,6 +41,16 @@ export class BombProjectile extends Projectile {
           return
       }
 
+      // Hit Big Meteor
+      if (sim.bigMeteor) {
+          if (CollisionService.checkCircleCollision(this, sim.bigMeteor, 4, sim.bigMeteor.size)) {
+              sim.bigMeteor.hp -= 1
+              sim.createExplosion(this.x, this.y, 25, this.color)
+              this.markedForDeletion = true
+              return
+          }
+      }
+
       // Hit Serpent (Instakill logic)
       for (const s of sim.serpents) {
           if (CollisionService.checkSegmentCollision(this, s.segments, 30, 0)) {

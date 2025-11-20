@@ -104,7 +104,16 @@ export class Ship extends Entity {
     }
     if (closestBuff) return { target: closestBuff, type: TARGET_TYPE.POWERUP }
 
-    // 1. Приоритет: ЗМЕИ (PvE)
+    // 1. Приоритет: БОЛЬШОЙ МЕТЕОРИТ (обычным оружием и бомбами)
+    if (sim.bigMeteor) {
+      const d = MathUtils.dist(this, sim.bigMeteor)
+      // Атакуем большой метеорит, если он в пределах досягаемости
+      if (d < 800) {
+        return { target: sim.bigMeteor, type: TARGET_TYPE.POINT }
+      }
+    }
+
+    // 2. Приоритет: ЗМЕИ (PvE)
     // Ищем ближайшую змею
     let closestSerpent: VoidSerpent | null = null
     let minSerpentDist = Infinity
@@ -126,7 +135,7 @@ export class Ship extends Entity {
        }
     }
 
-    // 2. Приоритет: ВРАЖЕСКИЕ КОРАБЛИ (PvP)
+    // 3. Приоритет: ВРАЖЕСКИЕ КОРАБЛИ (PvP)
     let closestShip: Ship | null = null
     let minShipDist = Infinity
 
@@ -144,7 +153,7 @@ export class Ship extends Entity {
       return { target: closestShip, type: TARGET_TYPE.SHIP }
     }
 
-    // 3. Приоритет: ПАТРУЛЬ (Waypoints)
+    // 4. Приоритет: ПАТРУЛЬ (Waypoints)
     if (!this.wanderTarget || MathUtils.dist(this, this.wanderTarget) < 100) {
       const margin = 100
       this.wanderTarget = {
@@ -267,7 +276,10 @@ export class Ship extends Entity {
         this.state = SHIP_STATE.ROAM // Мы пока просто летим
       } else {
         // Путь чист, выполняем боевую задачу или полет
-        if (type === TARGET_TYPE.SERPENT || type === TARGET_TYPE.SHIP) {
+        // Проверяем, является ли цель большим метеоритом
+        const isBigMeteor = sim.bigMeteor && target === sim.bigMeteor
+
+        if (type === TARGET_TYPE.SERPENT || type === TARGET_TYPE.SHIP || isBigMeteor) {
            this.state = SHIP_STATE.DOGFIGHT
            const distToTarget = MathUtils.dist(this, target)
            this.handleCombat(sim, target, distToTarget, type === TARGET_TYPE.SERPENT)
@@ -287,6 +299,18 @@ export class Ship extends Entity {
     const push = Navigator.getAvoidanceVector(this, sim.ships, CONFIG.SHIP_SEPARATION)
     this.vx += push.x * 0.5
     this.vy += push.y * 0.5
+
+    // 4.5. ИЗБЕГАНИЕ БОЛЬШОГО МЕТЕОРИТА
+    if (sim.bigMeteor) {
+      const distToBigMeteor = MathUtils.dist(this, sim.bigMeteor)
+      const avoidRadius = sim.bigMeteor.size + 100 // Радиус избегания
+      if (distToBigMeteor < avoidRadius && distToBigMeteor > 0) {
+        const avoidAngle = MathUtils.angle(sim.bigMeteor, this) // Угол от метеорита к кораблю
+        const avoidForce = (1 - distToBigMeteor / avoidRadius) * 2.0 // Сила отталкивания
+        this.vx += Math.cos(avoidAngle) * avoidForce
+        this.vy += Math.sin(avoidAngle) * avoidForce
+      }
+    }
 
     // 5. REGEN UPGRADE (Наноботы)
     const regenUpgrade = RegenUpgrade.getInstance()
@@ -353,6 +377,44 @@ export class Ship extends Entity {
   }
 
   private handleCombat(sim: Simulation, target: any, dist: number, isSerpent: boolean) {
+      // Проверка на большой метеорит - атакуем обычным оружием и бомбами
+      const isBigMeteor = sim.bigMeteor && target === sim.bigMeteor
+
+      if (isBigMeteor) {
+        // Рассчитываем упреждение для большого метеорита
+        const tvx = target.vx || 0
+        const tvy = target.vy || 0
+        const leadX = target.x + tvx * 15
+        const leadY = target.y + tvy * 15
+        const leadAngle = MathUtils.angle(this, {x: leadX, y: leadY})
+        const aimDiff = Math.abs(MathUtils.normalizeAngle(leadAngle - this.angle))
+
+        // Стрельба обычным оружием
+        if (this.weapon.isReady && !this.isJammed) {
+          const allowedAngle = this.weapon.getAllowedAngle()
+          const range = this.weapon.getRange(CONFIG.SHIP_ENGAGEMENT_DIST)
+
+          if (dist < range && aimDiff < allowedAngle) {
+            const critResult = CritService.calculateCritDamage(this.damageMult)
+            this.weapon.fire(sim, this, leadAngle, critResult.damage, this.reloadMult)
+          }
+        }
+
+        // Атака большого метеорита бомбами
+        if (this.bombLevel > 0 && this.bombCooldown <= 0) {
+          const angleToTarget = MathUtils.angle(this, target)
+          const aimDiffBomb = Math.abs(MathUtils.normalizeAngle(angleToTarget - this.angle))
+
+          // Стреляем бомбой, если смотрим на большой метеорит
+          if (dist < 600 && aimDiffBomb < 0.8) {
+            const damage = this.bombLevel === 2 ? CONFIG.BOMB_DAMAGE * 2 : CONFIG.BOMB_DAMAGE
+            sim.spawnBomb(this.x, this.y, this.vx, this.vy, angleToTarget, this.bombLevel)
+            this.bombCooldown = 400
+          }
+        }
+        return
+      }
+
       // Рассчитываем упреждение
       // Если у цели есть скорость (корабль), используем её. Если нет (сегмент змеи), считаем 0
       const tvx = target.vx || 0

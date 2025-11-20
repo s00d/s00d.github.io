@@ -8,6 +8,8 @@ import type { Simulation } from '../simulation'
 import { TARGET_TYPE } from '../constants/states'
 import { UpgradeFactory } from '../upgrades/UpgradeFactory'
 import { GravityService } from '../services/GravityService'
+import { CoinReward } from '../ui/CoinReward'
+import { economy } from '../economy'
 
 export class VoidSerpent extends Entity {
   life: number = 1.0
@@ -39,7 +41,13 @@ export class VoidSerpent extends Entity {
 
   // Применение бонусов - использует фабрику апгрейдов
   // Для змей оружие превращается в DAMAGE_BOOST
-  applyPowerUp(p: PowerUp) {
+  applyPowerUp(p: PowerUp, sim?: Simulation) {
+    // Специальная обработка монеты для призраков
+    if (p.type === 'COIN' && sim) {
+      economy.darkMatter += 500
+      return
+    }
+
     // Змеи не используют пушки, но получают статы
     // Оружие превращаем в урон
     if (p.type.startsWith('GET_') && p.type !== 'GET_SHIELD' && p.type !== 'GET_TELEPORT') {
@@ -76,6 +84,9 @@ export class VoidSerpent extends Entity {
       // --- ВЫДАЧА НАГРАДЫ ---
       const reward = this.bounty
       sim.addCoins(reward, this.x, this.y)
+      
+      // Add dark matter for upgrades (same amount as coins)
+      sim.addDarkMatter(reward, this.x, this.y)
 
       this.markedForDeletion = true
     }
@@ -176,9 +187,20 @@ export class VoidSerpent extends Entity {
         }
         // ПОДБОР БОНУСА
         if (this.targetType === TARGET_TYPE.POWERUP && MathUtils.dist(this, target) < 30 * this.sizeMult) {
-             this.applyPowerUp(target as PowerUp)
-             ;(target as PowerUp).markedForDeletion = true
-             sim.createExplosion(this.x, this.y, 10, target.color)
+             const powerUp = target as PowerUp
+             // Специальная обработка монеты
+             if (powerUp.type === 'COIN') {
+               economy.darkMatter += 500
+               sim.createExplosion(this.x, this.y, 20, '#fbbf24')
+               const coinReward = CoinReward.create(this.x, this.y, 500)
+               coinReward.text = `+500⚫`
+               coinReward.color = '#8b5cf6'
+               sim.floatingTexts.push(coinReward)
+             } else {
+               this.applyPowerUp(powerUp, sim)
+               sim.createExplosion(this.x, this.y, 10, powerUp.color)
+             }
+             powerUp.markedForDeletion = true
         }
     } else {
         // Если нет цели, просто плаваем вокруг дыры или от нее
@@ -189,6 +211,22 @@ export class VoidSerpent extends Entity {
              this.angle += Math.sign(diff) * Math.min(Math.abs(diff), 0.02)
         }
         this.speed = 2.0 * this.speedMult
+    }
+
+    // ИЗБЕГАНИЕ БОЛЬШОГО МЕТЕОРИТА
+    if (sim.bigMeteor) {
+      const distToBigMeteor = MathUtils.dist(this, sim.bigMeteor)
+      const avoidRadius = sim.bigMeteor.size + 150 // Радиус избегания для призрака
+      if (distToBigMeteor < avoidRadius && distToBigMeteor > 0) {
+        const avoidAngle = MathUtils.angle(sim.bigMeteor, this) // Угол от метеорита к призраку
+        const avoidForce = (1 - distToBigMeteor / avoidRadius) * 1.5 // Сила отталкивания
+        // Применяем силу избегания к скорости
+        const avoidVx = Math.cos(avoidAngle) * avoidForce
+        const avoidVy = Math.sin(avoidAngle) * avoidForce
+        // Добавляем к углу движения
+        const currentAngle = Math.atan2(Math.sin(this.angle) * this.speed + avoidVy, Math.cos(this.angle) * this.speed + avoidVx)
+        this.angle = currentAngle
+      }
     }
 
     // Движение головы

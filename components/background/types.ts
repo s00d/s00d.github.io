@@ -12,5 +12,7 @@ export type PowerUpType =
   | 'GET_MINIGUN' | 'GET_SHOTGUN' | 'GET_RAILGUN' | 'GET_MISSILE' | 'GET_PLASMA' | 'GET_FLAK' | 'GET_WAVE' | 'GET_SNIPER'
   // Улучшения
   | 'GET_SHIELD' | 'GET_TELEPORT' | 'UPGRADE_BOMB' | 'UPGRADE_RANGE'
+  // Монета
+  | 'COIN'
 export type Effect = { type: PowerUpType; timer: number }
 

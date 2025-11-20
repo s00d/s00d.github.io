@@ -3,6 +3,7 @@ import { MathUtils } from '../utils/math'
 import type { Simulation } from '../simulation'
 import type { Ship } from '../entities/Ship'
 import type { VoidSerpent } from '../entities/VoidSerpent'
+import type { BigMeteor } from '../entities/BigMeteor'
 import { CollisionService } from '../services/CollisionService'
 
 export abstract class Projectile extends Entity {
@@ -18,6 +19,14 @@ export abstract class Projectile extends Entity {
 
   // Базовая логика коллизий
   checkCollisions(sim: Simulation) {
+    // Большой метеорит
+    if (sim.bigMeteor) {
+      if (CollisionService.checkCircleCollision(this, sim.bigMeteor, this.size, sim.bigMeteor.size)) {
+        this.onHitBigMeteor(sim, sim.bigMeteor)
+        return
+      }
+    }
+
     // Корабли
     for (const s of sim.ships) {
        if (s.color === this.color) continue // Friendly fire off
@@ -36,6 +45,13 @@ export abstract class Projectile extends Entity {
             }
         }
     }
+  }
+
+  onHitBigMeteor(sim: Simulation, bigMeteor: BigMeteor) {
+    // Обычные пули наносят 0.1 урона большому метеориту (10 пуль = 1 HP)
+    bigMeteor.hp -= 0.1
+    sim.createExplosion(this.x, this.y, 8, this.color)
+    this.markedForDeletion = true
   }
 
   onHitShip(sim: Simulation, ship: Ship) {

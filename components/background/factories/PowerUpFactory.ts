@@ -21,7 +21,7 @@ export class PowerUpFactory {
     const allTypes: PowerUpType[] = [
       'SPEED_BOOST', 'DAMAGE_BOOST', 'SIZE_UP', 'SIZE_DOWN',
       'GET_SHIELD', 'GET_TELEPORT', 'UPGRADE_RANGE', 'UPGRADE_BOMB',
-      'HEAL',
+      'HEAL', 'COIN',
       'GET_MINIGUN', 'GET_SHOTGUN', 'GET_RAILGUN', 'GET_MISSILE',
       'GET_PLASMA', 'GET_FLAK', 'GET_WAVE', 'GET_SNIPER',
       'SLOW_DOWN', 'WEAPON_JAM'

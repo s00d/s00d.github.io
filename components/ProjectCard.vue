@@ -19,12 +19,12 @@ const { elementX, elementY, isOutside, elementHeight, elementWidth } = useMouseI
 
 const cardTransform = computed(() => {
   if (isOutside.value) return ''
-  
+
   const MAX_ROTATION = 6
-  
+
   const rX = (MAX_ROTATION / 2 - (elementY.value / elementHeight.value) * MAX_ROTATION).toFixed(2) // Rotate X
   const rY = ((elementX.value / elementWidth.value) * MAX_ROTATION - MAX_ROTATION / 2).toFixed(2) // Rotate Y
-  
+
   return `perspective(1000px) rotateX(${rX}deg) rotateY(${rY}deg) scale(1.02)`
 })
 
@@ -38,19 +38,27 @@ const langColors: Record<string, string> = {
   HTML: 'text-orange-400',
   CSS: 'text-blue-300'
 }
+
+// Обработчики для предотвращения всплытия событий на canvas
+const stopPropagation = (e: Event) => {
+  e.stopPropagation()
+}
 </script>
 
 <template>
-  <a 
-    :href="project.url" 
+  <a
+    :href="project.url"
     target="_blank"
     ref="target"
-    :style="{ 
+    @touchstart.stop="stopPropagation"
+    @touchend.stop="stopPropagation"
+    @click.stop="stopPropagation"
+    :style="{
       transform: cardTransform,
       transition: isOutside ? 'transform 0.5s ease' : 'none',
-      animationDelay: `${index * 50}ms` 
+      animationDelay: `${index * 50}ms`
     }"
-    class="project-card group relative flex flex-col justify-between p-6 bg-surface/40 backdrop-blur-sm border border-white/5 rounded-2xl hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 hover:bg-surface/60 animate-slide-up opacity-0"
+    class="project-card group relative flex flex-col justify-between p-6 bg-surface/40 backdrop-blur-sm border border-white/5 rounded-2xl hover:border-primary/50 active:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 hover:bg-surface/60 active:bg-surface/60 animate-slide-up opacity-0 touch-manipulation"
   >
     <!-- Shine Effect -->
     <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-gradient-to-br from-white/5 to-transparent"></div>
@@ -69,7 +77,7 @@ const langColors: Record<string, string> = {
       <h3 class="text-lg font-bold text-white mb-2 group-hover:text-primary transition-colors">
         {{ project.name }}
       </h3>
-      
+
       <p class="text-gray-400 text-sm leading-relaxed mb-4 line-clamp-3 h-[4.5em]">
         {{ project.description || 'No description provided' }}
       </p>

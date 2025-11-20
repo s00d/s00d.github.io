@@ -3,6 +3,7 @@ import { CONFIG } from '../config'
 import { BHState } from '../types'
 import { MathUtils } from '../utils/math'
 import type { Simulation } from '../simulation'
+import { economy } from '../economy'
 
 export class Meteor extends Entity {
   size: number
@@ -47,6 +48,8 @@ export class Meteor extends Entity {
       if (bh.safetyTimer === 0 && dist < bh.visualRadius) {
          sim.createExplosion(this.x, this.y, 5, this.color)
          bh.mass += CONFIG.MASS_GAIN_METEOR
+         // Добавляем черную материю за поглощение метеорита
+         economy.darkMatter += 50 // Обычный метеорит дает 50 темной материи
          this.markedForDeletion = true
          return
       }

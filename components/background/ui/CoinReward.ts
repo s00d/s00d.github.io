@@ -41,3 +41,4 @@ export class CoinReward extends FloatingText {
   }
 }
 
+

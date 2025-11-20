@@ -63,7 +63,8 @@ export default defineNuxtConfig({
       title: "Pavel Kuz'min | Creative Developer",
       meta: [
         { name: 'description', content: 'Backend & Frontend Developer Portfolio. Open Source enthusiast.' },
-        { name: 'theme-color', content: '#0a0a0a' }
+        { name: 'theme-color', content: '#0a0a0a' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover' }
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.ico' }

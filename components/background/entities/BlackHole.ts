@@ -7,6 +7,7 @@ import { StableState } from './blackhole/StableState'
 import { UnstableState } from './blackhole/UnstableState'
 import { ExplodingState } from './blackhole/ExplodingState'
 import { ReformingState } from './blackhole/ReformingState'
+import { economy } from '../economy'
 
 export class BlackHole extends Entity {
   mass: number = 0
@@ -17,6 +18,23 @@ export class BlackHole extends Entity {
   shake: number = 0
   shockwaveRadius: number = 0
   safetyTimer: number = 0
+  darkMatterTimer: number = 0 // Таймер для начисления черной материи
+
+  // Улучшения черной дыры (покупаются автоматически за darkMatter)
+  upgrades = {
+    serpentBaseCost: 0,      // Уменьшение базовой стоимости змеи
+    serpentHealth: 0,         // Здоровье змеи
+    serpentSpeed: 0,          // Скорость змеи
+    serpentDamage: 0,         // Урон змеи
+    balanceRate: 0            // Скорость накопления darkMatter
+  }
+
+  // Дебаффы черной дыры (покупаются игроком за coins)
+  debuffs = {
+    serpentCost: 0,          // Увеличение базовой стоимости змей (+50 за уровень)
+    balanceRate: 0,          // Уменьшение скорости накопления darkMatter (-10 за уровень)
+    darkMatterRate: 0        // Уменьшение скорости накопления darkMatter (-5 за уровень)
+  }
 
   private currentState: BlackHoleState = new StableState()
   private states: Map<BHState, BlackHoleState> = new Map([
@@ -53,6 +71,17 @@ export class BlackHole extends Entity {
     // Иначе она никогда не наберет силу для взрыва.
     if (this.state !== BHState.UNSTABLE && this.shake > 0) {
         this.shake *= 0.9
+    }
+
+    // Начисление черной материи каждую секунду (базовая +100, +50 за каждый уровень balanceRate, -10 за каждый уровень debuff, -5 за каждый уровень darkMatterRate debuff)
+    this.darkMatterTimer++
+    if (this.darkMatterTimer >= 60) { // 60 кадров = 1 секунда при 60fps
+      const baseRate = 100
+      const upgradeBonus = this.upgrades.balanceRate * 50
+      const balanceRateDebuffPenalty = this.debuffs.balanceRate * 10
+      const darkMatterRateDebuffPenalty = this.debuffs.darkMatterRate * 5
+      economy.darkMatter += Math.max(0, baseRate + upgradeBonus - balanceRateDebuffPenalty - darkMatterRateDebuffPenalty)
+      this.darkMatterTimer = 0
     }
 
     // Делегируем обновление текущему состоянию
