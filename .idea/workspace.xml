@@ -6,6 +6,50 @@
   <component name="ChangeListManager">
     <list default="true" id="fbdf33e5-867b-4d6b-90a2-2b27d0f6b247" name="Changes" comment="update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/constants/states.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/constants/states.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/entities/BigMeteor.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/entities/BigMeteor.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/entities/Entity.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/entities/Entity.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/entities/Meteor.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/entities/Meteor.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/entities/Ship.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/entities/Ship.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/entities/VoidSerpent.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/entities/VoidSerpent.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/projectiles/BombProjectile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/projectiles/BombProjectile.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/projectiles/HomingMissile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/projectiles/HomingMissile.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/projectiles/PatternProjectile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/projectiles/PatternProjectile.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/projectiles/Projectile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/projectiles/Projectile.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/renderer/Renderer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/renderer/Renderer.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/services/CollisionService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/services/CollisionService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/services/DamageService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/services/DamageService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/services/GravityService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/services/GravityService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/simulation.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/simulation.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/BombUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/BombUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/CoinUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/CoinUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/DamageBoostUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/DamageBoostUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/HealUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/HealUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/RangeUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/RangeUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/RapidFireUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/RapidFireUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/ShieldUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/ShieldUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/SizeDownUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/SizeDownUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/SizeUpUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/SizeUpUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/SlowDownUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/SlowDownUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/SpeedBoostUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/SpeedBoostUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/TeleportUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/TeleportUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/Upgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/Upgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/UpgradeFactory.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/UpgradeFactory.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/WeaponJamUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/WeaponJamUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/upgrades/WeaponUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/upgrades/WeaponUpgrade.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/utils/math.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/utils/math.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/utils/navigator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/utils/navigator.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/weapons/Blaster.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/weapons/Blaster.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/weapons/FlakCannon.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/weapons/FlakCannon.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/weapons/Minigun.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/weapons/Minigun.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/weapons/MissileLauncher.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/weapons/MissileLauncher.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/weapons/PlasmaGun.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/weapons/PlasmaGun.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/weapons/Railgun.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/weapons/Railgun.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/weapons/Shotgun.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/weapons/Shotgun.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/weapons/SniperRifle.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/weapons/SniperRifle.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/background/weapons/WaveGun.ts" beforeDir="false" afterPath="$PROJECT_DIR$/components/background/weapons/WaveGun.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,7 +97,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "/Users/s00d/packeges/s00d.github.io/public",
+    "last_opened_file_path": "/Users/s00d/packeges/s00d.github.io",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -66,11 +110,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/public" />
       <recent name="$PROJECT_DIR$/public/models" />
       <recent name="$PROJECT_DIR$/assets/models" />
       <recent name="$PROJECT_DIR$/static" />
-      <recent name="$PROJECT_DIR$/components/icons" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/public" />
@@ -199,7 +243,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763624237160</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="update">
+      <option name="closed" value="true" />
+      <created>1763640194530</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1763640194530</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

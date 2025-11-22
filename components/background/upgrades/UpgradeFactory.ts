@@ -1,5 +1,6 @@
 import { Upgrade, type Upgradeable } from './Upgrade'
 import type { PowerUpType } from '../types'
+import type { Simulation } from '../simulation'
 import { HealUpgrade } from './HealUpgrade'
 import { SpeedBoostUpgrade } from './SpeedBoostUpgrade'
 import { DamageBoostUpgrade } from './DamageBoostUpgrade'
@@ -63,10 +64,10 @@ export class UpgradeFactory {
   /**
    * Применяет апгрейд к объекту
    */
-  static apply(type: PowerUpType, target: Upgradeable): void {
+  static apply(type: PowerUpType, target: Upgradeable, sim: Simulation): void {
     const upgrade = this.create(type)
     if (upgrade) {
-      upgrade.apply(target)
+      upgrade.apply(target, sim)
     }
   }
 }

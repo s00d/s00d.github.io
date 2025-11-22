@@ -22,13 +22,14 @@ export class Blaster extends Weapon {
     const vx = owner.vx + Math.cos(angle + spread) * this.config.speed
     const vy = owner.vy + Math.sin(angle + spread) * this.config.speed
 
-    sim.projectiles.push(new LinearProjectile(
+    const projectile = sim.projectilePool.acquireLinear(
       owner.x, owner.y, vx, vy,
       owner.color, // Бластер берет цвет корабля
       this.config.damage * damageMult,
       this.config.size,
       60 // Life
-    ))
+    )
+    sim.projectiles.add(projectile)
   }
 
   generateVisual(width: number, height: number): CachedGraphics {

@@ -26,11 +26,12 @@ export class MissileLauncher extends Weapon {
     const vx = owner.vx + Math.cos(angle + spread) * this.config.speed
     const vy = owner.vy + Math.sin(angle + spread) * this.config.speed
 
-    sim.projectiles.push(new HomingMissile(
+    const missile = new HomingMissile(
       owner.x, owner.y, vx, vy,
       this.config.color!,
       this.config.damage * damageMult
-    ))
+    )
+    sim.projectiles.add(missile)
   }
 
   generateVisual(width: number, height: number): CachedGraphics {

@@ -14,6 +14,27 @@ export abstract class Entity {
     this.color = color
   }
 
+  /**
+   * Получить позицию X
+   */
+  get posX(): number {
+    return this.x
+  }
+
+  /**
+   * Получить позицию Y
+   */
+  get posY(): number {
+    return this.y
+  }
+
+  /**
+   * Получить цвет
+   */
+  get entityColor(): string {
+    return this.color
+  }
+
   abstract update(sim: Simulation): void
 
   applyPhysics(warpFactor: number = 1, friction: number = 1) {

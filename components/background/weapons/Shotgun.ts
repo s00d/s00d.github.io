@@ -25,13 +25,14 @@ export class Shotgun extends Weapon {
       const vx = owner.vx + Math.cos(angle + spread) * this.config.speed
       const vy = owner.vy + Math.sin(angle + spread) * this.config.speed
 
-      sim.projectiles.push(new LinearProjectile(
+      const projectile = sim.projectilePool.acquireLinear(
         owner.x, owner.y, vx, vy,
         this.config.color!,
         this.config.damage * damageMult,
         this.config.size,
         40 // Дробовик недалеко стреляет
-      ))
+      )
+      sim.projectiles.add(projectile)
     }
   }
 

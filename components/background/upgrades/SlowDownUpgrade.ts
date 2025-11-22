@@ -1,6 +1,8 @@
 import { Upgrade, type Upgradeable, type EffectModifiers } from './Upgrade'
 import type { PowerUpType } from '../types'
 import { CONFIG } from '../config'
+import type { Simulation } from '../simulation'
+import { EffectSpawnService } from '../services/EffectSpawnService'
 
 export class SlowDownUpgrade extends Upgrade {
   readonly type: PowerUpType = 'SLOW_DOWN'
@@ -9,7 +11,7 @@ export class SlowDownUpgrade extends Upgrade {
   readonly weight: number = 6
   readonly isGood: boolean = false
 
-  apply(target: Upgradeable): void {
+  apply(target: Upgradeable, sim: Simulation): void {
     const existing = target.activeEffects.find(e => e.type === this.type)
     if (existing) {
       existing.timer = this.duration
@@ -18,6 +20,8 @@ export class SlowDownUpgrade extends Upgrade {
       if (!target.statusIcons.includes(this.icon)) {
         target.statusIcons.push(this.icon)
       }
+      // Создаем эффект применения (дебафф)
+      EffectSpawnService.createExplosion(target.x, target.y, 15, target.color || '#a855f7', sim)
     }
   }
 

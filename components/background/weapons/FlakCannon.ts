@@ -22,13 +22,14 @@ export class FlakCannon extends Weapon {
     const vx = owner.vx + Math.cos(angle + spread) * this.config.speed
     const vy = owner.vy + Math.sin(angle + spread) * this.config.speed
 
-    sim.projectiles.push(new PatternProjectile(
+    const projectile = new PatternProjectile(
       owner.x, owner.y, vx, vy,
       this.config.color!,
       this.config.damage * damageMult,
       this.config.size,
       'FLAK'
-    ))
+    )
+    sim.projectiles.add(projectile)
   }
 
   generateVisual(width: number, height: number): CachedGraphics {

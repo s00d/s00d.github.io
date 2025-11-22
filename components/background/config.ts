@@ -1,4 +1,6 @@
-export const CONFIG = {
+import type { GameConfig } from './types'
+
+export const CONFIG: GameConfig = {
   POINT_COUNT: 60,
   MAX_METEORS: 20,
   GRAVITY_RADIUS_BASE: 700,
@@ -21,6 +23,12 @@ export const CONFIG = {
   // Добавим настройки размера
   SIZE_MODIFIER_BIG: 1.8,
   SIZE_MODIFIER_SMALL: 0.6,
+
+  // Ограничения для трейлов
+  MAX_TRAIL_LENGTH: 30,        // Максимальная длина трейла для метеоритов
+  MAX_BIG_METEOR_TRAIL: 30,    // Максимальная длина трейла для большого метеорита
+  MAX_MISSILE_TRAIL: 15,       // Максимальная длина трейла для ракет
+  MAX_SERPENT_SEGMENTS: 40,    // Базовое максимальное количество сегментов змеи
 
 
   COLORS: {

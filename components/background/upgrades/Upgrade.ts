@@ -1,8 +1,14 @@
 import type { PowerUpType } from '../types'
 import type { Ship } from '../entities/Ship'
 import type { VoidSerpent } from '../entities/VoidSerpent'
+import type { Simulation } from '../simulation'
 
 export interface Upgradeable {
+  // Позиция и визуал (обязательные для всех сущностей)
+  x: number
+  y: number
+  color: string
+
   activeEffects: Array<{ type: PowerUpType; timer: number }>
   statusIcons: string[]
   hp?: number
@@ -44,8 +50,9 @@ export abstract class Upgrade {
   /**
    * Применяет апгрейд к объекту
    * @param target - корабль или призрак
+   * @param sim - симуляция для создания эффектов
    */
-  abstract apply(target: Upgradeable): void
+  abstract apply(target: Upgradeable, sim: Simulation): void
 
   /**
    * Обновляет эффект апгрейда (для временных эффектов)
@@ -60,6 +67,26 @@ export abstract class Upgrade {
    * @param target - корабль или призрак
    */
   removeEffect?(target: Upgradeable): void
+
+  /**
+   * Пытается выполнить телепорт корабля
+   * @param ship - корабль для телепортации
+   * @param sim - симуляция
+   * @returns true, если телепорт выполнен
+   */
+  tryTeleport(ship: Ship, sim: Simulation): boolean {
+    return false
+  }
+
+  /**
+   * Пытается выстрелить бомбой в черную дыру
+   * @param ship - корабль
+   * @param sim - симуляция
+   * @returns true, если бомба была выпущена
+   */
+  tryFireBomb(ship: Ship, sim: Simulation): boolean {
+    return false
+  }
 
   /**
    * Получить иконку для отображения

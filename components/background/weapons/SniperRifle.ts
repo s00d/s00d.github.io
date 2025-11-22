@@ -25,13 +25,14 @@ export class SniperRifle extends Weapon {
     const vx = owner.vx + Math.cos(angle) * this.config.speed
     const vy = owner.vy + Math.sin(angle) * this.config.speed
 
-    sim.projectiles.push(new LinearProjectile(
+    const projectile = sim.projectilePool.acquireLinear(
       owner.x, owner.y, vx, vy,
       this.config.color!,
       this.config.damage * damageMult,
       this.config.size,
       30
-    ))
+    )
+    sim.projectiles.add(projectile)
   }
 
   generateVisual(width: number, height: number): CachedGraphics {

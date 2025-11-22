@@ -5,6 +5,7 @@ import type { Simulation } from '../simulation'
 import { CONFIG } from '../config'
 import { SHIP_STATE } from '../constants/states'
 import { MathUtils } from '../utils/math'
+import { EffectSpawnService } from '../services/EffectSpawnService'
 
 export class TeleportUpgrade extends Upgrade {
   readonly type: PowerUpType = 'GET_TELEPORT'
@@ -13,9 +14,11 @@ export class TeleportUpgrade extends Upgrade {
   readonly weight: number = 5
   readonly isGood: boolean = true
 
-  apply(target: Upgradeable): void {
+  apply(target: Upgradeable, sim: Simulation): void {
     if (target.hasTeleport !== undefined) {
       target.hasTeleport = true
+      // Создаем эффект применения
+      EffectSpawnService.createExplosion(target.x, target.y, 15, CONFIG.COLORS.shield, sim)
     }
   }
 
@@ -39,7 +42,7 @@ export class TeleportUpgrade extends Upgrade {
       ship.y = ship.navTarget.y - Math.sin(angle) * 100
 
       // Эффект телепортации
-      sim.createExplosion(ship.x, ship.y, 20, CONFIG.COLORS.shield)
+      EffectSpawnService.createExplosion(ship.x, ship.y, 20, CONFIG.COLORS.shield, sim)
       ship.hasTeleport = false // Потрачено
       return true
     }

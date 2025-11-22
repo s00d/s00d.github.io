@@ -1,9 +1,12 @@
 import { Projectile } from './Projectile'
+import { CONFIG } from '../config'
 import { MathUtils } from '../utils/math'
 import type { Simulation } from '../simulation'
-import type { Entity } from '../entities/Entity'
+import { Entity } from '../entities/Entity'
 import { VoidSerpent } from '../entities/VoidSerpent'
+import { Ship } from '../entities/Ship'
 import { Particle } from '../entities/Particle'
+import { EffectSpawnService } from '../services/EffectSpawnService'
 
 export class HomingMissile extends Projectile {
   target?: Entity | null
@@ -15,19 +18,30 @@ export class HomingMissile extends Projectile {
   }
 
   override update(sim: Simulation) {
-     // Поиск цели
-     if (!this.target || (this.target as any).markedForDeletion) {
+     // Поиск цели (оптимизировано через SpatialGrid)
+     if (!this.target || (this.target instanceof Entity && this.target.markedForDeletion)) {
         let closest = Infinity
-        for (const s of sim.ships) {
+        const nearbyEntities = sim.spatialGrid.query(this.x, this.y, 800)
+
+        const maxDistSq = 800 * 800
+        for (const entity of nearbyEntities) {
+          if (entity instanceof Ship) {
+            const s = entity as Ship
             if (s.color === this.color) continue
-            const d = MathUtils.dist(this, s)
-            if (d < closest && d < 800) { closest = d; this.target = s }
-        }
-        if (!this.target) { // Если нет кораблей, ищем змей
-            for (const s of sim.serpents) {
-                const d = MathUtils.dist(this, s)
-                if (d < closest && d < 800) { closest = d; this.target = s }
+            const dSq = MathUtils.distSq(this, s)
+            if (dSq < closest * closest && dSq < maxDistSq) {
+              closest = Math.sqrt(dSq)
+              this.target = s
             }
+          } else if (entity instanceof VoidSerpent && !this.target) {
+            // Если нет кораблей, ищем змей
+            const s = entity as VoidSerpent
+            const dSq = MathUtils.distSq(this, s)
+            if (dSq < closest * closest && dSq < maxDistSq) {
+              closest = Math.sqrt(dSq)
+              this.target = s
+            }
+          }
         }
      }
 
@@ -59,21 +73,23 @@ export class HomingMissile extends Projectile {
 
          // Дым
          if (Math.random() < 0.4) {
-             sim.particles.push(new Particle(this.x, this.y, '#555', MathUtils.randomRange(1, 3), 0, 0))
+             const particle = sim.particlePool.acquire(this.x, this.y, '#555', MathUtils.randomRange(1, 3), 0, 0)
+             sim.particles.add(particle)
          }
      }
 
      // Trail
      this.trail.push({x: this.x, y: this.y})
-     if (this.trail.length > 15) this.trail.shift()
+     if (this.trail.length > CONFIG.MAX_MISSILE_TRAIL) this.trail.shift()
 
      super.update(sim)
   }
 
-  override createHitEffect(sim: Simulation) {
-      sim.createExplosion(this.x, this.y, 20, '#fbbf24') // Взрыв
-      sim.spawnShockwave(this.x, this.y)
+  override createHitEffect(sim: Simulation, createDefaultEffect?: (x: number, y: number, color: string) => void): void {
+      EffectSpawnService.createExplosion(this.x, this.y, 20, '#fbbf24', sim) // Взрыв
+      EffectSpawnService.spawnShockwave(this.x, this.y, sim)
       this.markedForDeletion = true
+      // Не вызываем createDefaultEffect, так как создаем свой эффект
   }
 
   drawSpecific(ctx: CanvasRenderingContext2D) {

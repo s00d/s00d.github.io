@@ -6,6 +6,7 @@ import type { Simulation } from '../simulation'
 import { BombProjectile } from '../projectiles/BombProjectile'
 import { CONFIG } from '../config'
 import { MathUtils } from '../utils/math'
+import { EffectSpawnService } from '../services/EffectSpawnService'
 
 export class BombUpgrade extends Upgrade {
   readonly type: PowerUpType = 'UPGRADE_BOMB'
@@ -14,9 +15,11 @@ export class BombUpgrade extends Upgrade {
   readonly weight: number = 5
   readonly isGood: boolean = true
 
-  apply(target: Upgradeable): void {
+  apply(target: Upgradeable, sim: Simulation): void {
     if (target.bombLevel !== undefined) {
       target.bombLevel = 2
+      // Создаем эффект применения
+      EffectSpawnService.createExplosion(target.x, target.y, 15, CONFIG.COLORS.bomb, sim)
     }
   }
 
@@ -43,7 +46,7 @@ export class BombUpgrade extends Upgrade {
     // Стреляем бомбой, если смотрим на дыру и она близко
     if (bhDiff < 0.5 && distBH < 500 && bh.state !== BHState.EXPLODING) {
       const damage = ship.bombLevel === 2 ? CONFIG.BOMB_DAMAGE * 2 : CONFIG.BOMB_DAMAGE
-      sim.spawnBomb(ship.x, ship.y, ship.vx, ship.vy, ship.angle, ship.bombLevel)
+      EffectSpawnService.spawnBomb(ship.x, ship.y, ship.vx, ship.vy, ship.angle, ship.bombLevel, sim)
       ship.bombCooldown = 400
       return true
     }

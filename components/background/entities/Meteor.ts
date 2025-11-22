@@ -3,7 +3,9 @@ import { CONFIG } from '../config'
 import { BHState } from '../types'
 import { MathUtils } from '../utils/math'
 import type { Simulation } from '../simulation'
+import { EffectSpawnService } from '../services/EffectSpawnService'
 import { economy } from '../economy'
+import { GravityService } from '../services/GravityService'
 
 export class Meteor extends Entity {
   size: number
@@ -29,13 +31,24 @@ export class Meteor extends Entity {
 
   update(sim: Simulation) {
     const bh = sim.blackHole
-    const dist = MathUtils.dist(this, bh)
     const angle = MathUtils.angle(this, bh)
+
+    // Оптимизация: используем distSq для сравнений
+    const distSq = MathUtils.distSq(this, bh)
 
     // 1. Сначала применяем силы (Гравитация/Взрыв)
     if (bh.state === BHState.EXPLODING) {
-      // Взрывная волна
-      if (dist < bh.shockwaveRadius + 50 && dist > bh.shockwaveRadius - 100) {
+      // Уничтожение от ударной волны
+      if (GravityService.shouldDieFromShockwave(this, bh)) {
+        EffectSpawnService.createExplosion(this.x, this.y, 8, this.color, sim)
+        this.markedForDeletion = true
+        return
+      }
+
+      // Взрывная волна (отталкивание)
+      const shockwaveRadiusMinSq = (bh.shockwaveRadius - 100) * (bh.shockwaveRadius - 100)
+      const shockwaveRadiusMaxSq = (bh.shockwaveRadius + 50) * (bh.shockwaveRadius + 50)
+      if (distSq < shockwaveRadiusMaxSq && distSq > shockwaveRadiusMinSq) {
         const force = 5.0
         this.vx -= Math.cos(angle) * force
         this.vy -= Math.sin(angle) * force
@@ -45,8 +58,9 @@ export class Meteor extends Entity {
       }
     } else {
       // Поглощение
-      if (bh.safetyTimer === 0 && dist < bh.visualRadius) {
-         sim.createExplosion(this.x, this.y, 5, this.color)
+      const visualRadiusSq = bh.visualRadius * bh.visualRadius
+      if (bh.safetyTimer === 0 && distSq < visualRadiusSq) {
+         EffectSpawnService.createExplosion(this.x, this.y, 5, this.color, sim)
          bh.mass += CONFIG.MASS_GAIN_METEOR
          // Добавляем черную материю за поглощение метеорита
          economy.darkMatter += 50 // Обычный метеорит дает 50 темной материи
@@ -57,8 +71,10 @@ export class Meteor extends Entity {
       // Гравитация
       const gravityPower = 0.4 + (bh.mass / CONFIG.CRITICAL_MASS) * 0.6
       const gRadius = CONFIG.GRAVITY_RADIUS_BASE * (0.5 + gravityPower * 0.5)
+      const gRadiusSq = gRadius * gRadius
 
-      if (dist < gRadius) {
+      if (distSq < gRadiusSq) {
+         const dist = Math.sqrt(distSq) // Вычисляем только если нужно
          const distFactor = 1 - dist / gRadius
          const pullStrength = this.gravityFactor > 0 ? 2.5 * (distFactor * distFactor) : 0.5 * distFactor
          const finalForce = pullStrength * this.gravityFactor * sim.warpFactor * gravityPower
@@ -69,7 +85,8 @@ export class Meteor extends Entity {
 
          // ИЗМЕНЕНИЕ: Усиленное торможение, чтобы они падали в дыру, а не пролетали мимо
          // Радиус 350px, сила 0.96
-         if (this.gravityFactor > 0 && dist < 350) {
+         const brakeRadiusSq = 350 * 350
+         if (this.gravityFactor > 0 && distSq < brakeRadiusSq) {
              this.vx *= 0.96; this.vy *= 0.96
          }
       }
@@ -86,7 +103,7 @@ export class Meteor extends Entity {
 
     // Трейл
     this.trail.push({x: this.x, y: this.y})
-    const maxTrail = (this.isDebris ? 8 : 14) * sim.warpFactor
+    const maxTrail = Math.min((this.isDebris ? 8 : CONFIG.MAX_TRAIL_LENGTH) * sim.warpFactor, 50) // Ограничение до 50
     if (this.trail.length > maxTrail) this.trail.shift()
 
     // Удаление за границами

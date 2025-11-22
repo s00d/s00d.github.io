@@ -1,8 +1,21 @@
 export class MathUtils {
+  /**
+   * Вычисляет расстояние между двумя точками
+   */
   static dist(e1: {x: number, y: number}, e2: {x: number, y: number}): number {
     const dx = e1.x - e2.x
     const dy = e1.y - e2.y
     return Math.sqrt(dx * dx + dy * dy)
+  }
+
+  /**
+   * Вычисляет квадрат расстояния (быстрее, без sqrt)
+   * Используется для сравнений расстояний
+   */
+  static distSq(e1: {x: number, y: number}, e2: {x: number, y: number}): number {
+    const dx = e1.x - e2.x
+    const dy = e1.y - e2.y
+    return dx * dx + dy * dy
   }
 
   static angle(from: {x: number, y: number}, to: {x: number, y: number}): number {

@@ -19,13 +19,15 @@ export class GravityService {
       return null // Гравитация не действует во время взрыва
     }
 
-    const distToBH = MathUtils.dist(entity, blackHole)
+    const distToBHSq = MathUtils.distSq(entity, blackHole)
     const angleToBH = MathUtils.angle(entity, blackHole)
 
     const gravityPower = 0.1 + (blackHole.mass / CONFIG.CRITICAL_MASS) * 0.9
     const gRadius = CONFIG.GRAVITY_RADIUS_BASE * (0.5 + gravityPower * 0.5)
+    const gRadiusSq = gRadius * gRadius
 
-    if (distToBH < gRadius) {
+    if (distToBHSq < gRadiusSq) {
+      const distToBH = Math.sqrt(distToBHSq) // Вычисляем только если нужно
       const pull = 0.3 * gravityPower * (1 - distToBH / gRadius)
       return {
         vx: Math.cos(angleToBH) * pull,
@@ -47,8 +49,10 @@ export class GravityService {
       return false // Не умираем от гравитации во время взрыва
     }
 
-    const distToBH = MathUtils.dist(entity, blackHole)
-    return distToBH < blackHole.visualRadius
+    // Оптимизация: используем distSq для избежания sqrt
+    const distToBHSq = MathUtils.distSq(entity, blackHole)
+    const visualRadiusSq = blackHole.visualRadius * blackHole.visualRadius
+    return distToBHSq < visualRadiusSq
   }
 
   /**
@@ -62,8 +66,10 @@ export class GravityService {
       return false
     }
 
-    const distToBH = MathUtils.dist(entity, blackHole)
-    return distToBH < blackHole.shockwaveRadius + 50
+    // Оптимизация: используем distSq для избежания sqrt
+    const distToBHSq = MathUtils.distSq(entity, blackHole)
+    const shockwaveRadiusSq = (blackHole.shockwaveRadius + 50) * (blackHole.shockwaveRadius + 50)
+    return distToBHSq < shockwaveRadiusSq
   }
 }
 

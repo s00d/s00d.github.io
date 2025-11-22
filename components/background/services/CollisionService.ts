@@ -19,8 +19,10 @@ export class CollisionService {
     radiusA: number,
     radiusB: number
   ): boolean {
-    const dist = MathUtils.dist(a, b)
-    return dist < (radiusA + radiusB)
+    // Оптимизация: используем distSq для избежания sqrt
+    const distSq = MathUtils.distSq(a, b)
+    const radiusSum = radiusA + radiusB
+    return distSq < (radiusSum * radiusSum)
   }
 
   /**
@@ -35,8 +37,9 @@ export class CollisionService {
     center: Entity | { x: number; y: number },
     radius: number
   ): boolean {
-    const dist = MathUtils.dist(point, center)
-    return dist < radius
+    // Оптимизация: используем distSq для избежания sqrt
+    const distSq = MathUtils.distSq(point, center)
+    return distSq < (radius * radius)
   }
 
   /**

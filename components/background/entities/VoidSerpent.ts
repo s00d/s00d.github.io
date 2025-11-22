@@ -2,16 +2,31 @@ import { Entity } from './Entity'
 import { CONFIG } from '../config'
 import { BHState, type Effect } from '../types'
 import { MathUtils } from '../utils/math'
-import type { PowerUp } from './PowerUp'
+import { PowerUp } from './PowerUp'
 import type { Ship } from './Ship'
 import type { Simulation } from '../simulation'
 import { TARGET_TYPE } from '../constants/states'
 import { UpgradeFactory } from '../upgrades/UpgradeFactory'
 import { GravityService } from '../services/GravityService'
+import { EffectService } from '../services/EffectService'
+import { TargetFinder, type TargetType } from '../services/TargetFinder'
 import { CoinReward } from '../ui/CoinReward'
 import { economy } from '../economy'
+import { DamageApplicationService } from '../services/DamageApplicationService'
+import { EffectSpawnService } from '../services/EffectSpawnService'
+import { EntityAIService } from '../services/EntityAIService'
+import { EntityMovementService } from '../services/EntityMovementService'
+import { EntityCombatService } from '../services/EntityCombatService'
 
 export class VoidSerpent extends Entity {
+  /**
+   * Проверяет, может ли змея атаковать цель данного типа
+   * @param targetType - тип цели
+   * @returns true, если змея может атаковать эту цель
+   */
+  static canAttack(targetType: TargetType): boolean {
+    return targetType === TARGET_TYPE.SHIP
+  }
   life: number = 1.0
   angle: number
   speed: number
@@ -25,7 +40,7 @@ export class VoidSerpent extends Entity {
   statusIcons: string[] = []
   sizeMult: number = 1.0
   navTarget: {x: number, y: number} | null = null // Для отрисовки линии
-  targetType: typeof TARGET_TYPE.SHIP | typeof TARGET_TYPE.POWERUP | null = null
+  targetType: TargetType = null
 
   // Модификаторы, управляемые апгрейдами
   damageMult: number = 1.0
@@ -41,22 +56,16 @@ export class VoidSerpent extends Entity {
 
   // Применение бонусов - использует фабрику апгрейдов
   // Для змей оружие превращается в DAMAGE_BOOST
-  applyPowerUp(p: PowerUp, sim?: Simulation) {
-    // Специальная обработка монеты для призраков
-    if (p.type === 'COIN' && sim) {
-      economy.darkMatter += 500
-      return
-    }
-
+  applyPowerUp(p: PowerUp, sim: Simulation) {
     // Змеи не используют пушки, но получают статы
     // Оружие превращаем в урон
     if (p.type.startsWith('GET_') && p.type !== 'GET_SHIELD' && p.type !== 'GET_TELEPORT') {
-      UpgradeFactory.apply('DAMAGE_BOOST', this)
+      UpgradeFactory.apply('DAMAGE_BOOST', this, sim)
       return
     }
 
     // Остальные апгрейды применяем через фабрику (включая HEAL с автоматической логикой)
-    UpgradeFactory.apply(p.type, this)
+    UpgradeFactory.apply(p.type, this, sim)
   }
 
   // Расчет стоимости змеи
@@ -69,57 +78,17 @@ export class VoidSerpent extends Entity {
   }
 
   takeDamage(sim: Simulation, damage: number = 1) {
-    // Если маленький - сложнее попасть (можно добавить шанс уклонения), но меньше HP
-    // Если большой - легче попасть, но урона проходит меньше (толстая шкура)
-    const actualDamage = this.sizeMult > 1.5 ? damage * 0.7 : damage
-    this.hp -= actualDamage
-
-    // ПОКАЗЫВАЕМ УРОН (Критом считаем урон > 5, для примера)
-    sim.spawnDamageText(this.x, this.y, actualDamage, actualDamage > 5)
-
-    sim.createExplosion(this.x, this.y, 5, this.color)
-    if (this.hp <= 0) {
-      sim.createExplosion(this.x, this.y, 60, '#ffffff')
-
-      // --- ВЫДАЧА НАГРАДЫ ---
-      const reward = this.bounty
-      sim.addCoins(reward, this.x, this.y)
-      
-      // Add dark matter for upgrades (same amount as coins)
-      sim.addDarkMatter(reward, this.x, this.y)
-
-      this.markedForDeletion = true
-    }
+    // Делегируем обработку урона в сервис
+    DamageApplicationService.applyDamageToSerpent(this, damage, sim)
   }
 
   private findTarget(sim: Simulation) {
-      let closestDist = Infinity
-      let target: Entity | null = null
-      let type: typeof TARGET_TYPE.SHIP | typeof TARGET_TYPE.POWERUP | null = null
-      // 1. Ищем Бонусы (Змеи тоже любят баффы)
-      for (const p of sim.powerUps) {
-          if (!p.isGood) continue
-          const d = MathUtils.dist(this, p)
-          if (d < closestDist && d < 400) { // Чует бонусы недалеко
-              closestDist = d
-              target = p
-              type = TARGET_TYPE.POWERUP
-          }
-      }
-      // 2. Ищем Корабли (Еда) - приоритет выше, если близко
-      for (const s of sim.ships) {
-          const d = MathUtils.dist(this, s)
-          // Если корабль ближе текущего бонуса или бонуса нет - атакуем корабль
-          if (d < closestDist && d < 800) {
-              closestDist = d
-              target = s
-              type = TARGET_TYPE.SHIP
-          }
-      }
-      if (target) {
-          this.navTarget = {x: target.x, y: target.y}
-          this.targetType = type
-          return target
+      const result = TargetFinder.findForSerpent(this, sim)
+      if (result.target) {
+          this.navTarget = {x: result.target.x, y: result.target.y}
+          // VoidSerpent может атаковать только SHIP или POWERUP
+          this.targetType = (result.type === TARGET_TYPE.SHIP || result.type === TARGET_TYPE.POWERUP) ? result.type : null
+          return result.target as Entity
       }
 
       this.navTarget = null
@@ -129,7 +98,9 @@ export class VoidSerpent extends Entity {
 
   update(sim: Simulation) {
     const bh = sim.blackHole
-    const distFromCenter = MathUtils.dist(this, bh)
+    // Оптимизация: используем distSq для сравнений
+    const distFromCenterSq = MathUtils.distSq(this, bh)
+    const distFromCenter = Math.sqrt(distFromCenterSq) // Вычисляем только если нужно
 
     // --- НОВАЯ ЛОГИКА: УНИЧТОЖЕНИЕ ВЗРЫВОМ ---
     if (GravityService.shouldDieFromShockwave(this, bh)) {
@@ -140,112 +111,34 @@ export class VoidSerpent extends Entity {
     // ------------------------------------------
 
     // --- ОБРАБОТКА ЭФФЕКТОВ ---
-    this.speedMult = 1.0
-    this.sizeMult = 1.0
-    this.damageMult = 1.0
-    for (let i = this.activeEffects.length - 1; i >= 0; i--) {
-        const eff = this.activeEffects[i]
-        if (!eff) {
-          this.activeEffects.splice(i, 1)
-          continue
-        }
-        eff.timer--
+    EffectService.updateEffects(this)
 
-        // Апгрейды напрямую изменяют свойства
-        const upgrade = UpgradeFactory.create(eff.type)
-        if (upgrade && upgrade.updateEffect) {
-          upgrade.updateEffect(this, eff)
-        }
+    // --- ИИ И ДВИЖЕНИЕ - используем сервис ---
+    const aiResult = EntityAIService.updateSerpentAI(this, sim)
+    this.navTarget = aiResult.target
+    this.targetType = aiResult.targetType
 
-        if (eff.timer <= 0) {
-          this.activeEffects.splice(i, 1)
-          // Удаляем иконку при истечении эффекта
-          if (upgrade && upgrade.removeEffect) {
-            upgrade.removeEffect(this)
-          }
+    // --- БОЕВАЯ ЛОГИКА - используем сервис ---
+    if (aiResult.target) {
+      const targetEntity = this.findTarget(sim)
+      if (targetEntity) {
+        // Пытаемся атаковать
+        if (VoidSerpent.canAttack(aiResult.targetType)) {
+          EntityCombatService.trySerpentAttack(this, targetEntity, aiResult.targetType, sim)
         }
-    }
-    // --- ИИ И ДВИЖЕНИЕ ---
-    const target = this.findTarget(sim)
-
-    if (target) {
-        // Поворачиваем к цели
-        const angleToTarget = MathUtils.angle(this, target)
-        let diff = MathUtils.normalizeAngle(angleToTarget - this.angle)
-        // Змея поворачивает медленнее кораблей
-        this.angle += Math.sign(diff) * Math.min(Math.abs(diff), 0.05)
-
-        // Ускоряемся к цели
-        this.speed = 3.0 * this.speedMult
-
-        // АТАКА (Укус)
-        if (this.targetType === 'SHIP' && MathUtils.dist(this, target) < 30 * this.sizeMult) {
-             // Кусаем корабль!
-             (target as Ship).takeDamage(sim, 2 * this.damageMult)
-             // Отталкиваемся
-             this.angle += Math.PI
+        // Пытаемся подобрать бонус
+        if (aiResult.targetType === TARGET_TYPE.POWERUP && targetEntity instanceof PowerUp) {
+          EntityCombatService.trySerpentPowerUpPickup(this, targetEntity, sim)
         }
-        // ПОДБОР БОНУСА
-        if (this.targetType === TARGET_TYPE.POWERUP && MathUtils.dist(this, target) < 30 * this.sizeMult) {
-             const powerUp = target as PowerUp
-             // Специальная обработка монеты
-             if (powerUp.type === 'COIN') {
-               economy.darkMatter += 500
-               sim.createExplosion(this.x, this.y, 20, '#fbbf24')
-               const coinReward = CoinReward.create(this.x, this.y, 500)
-               coinReward.text = `+500⚫`
-               coinReward.color = '#8b5cf6'
-               sim.floatingTexts.push(coinReward)
-             } else {
-               this.applyPowerUp(powerUp, sim)
-               sim.createExplosion(this.x, this.y, 10, powerUp.color)
-             }
-             powerUp.markedForDeletion = true
-        }
-    } else {
-        // Если нет цели, просто плаваем вокруг дыры или от нее
-        if (distFromCenter > 400) {
-            // Возвращаемся к центру
-             const angleToCenter = MathUtils.angle(this, bh)
-             let diff = MathUtils.normalizeAngle(angleToCenter - this.angle)
-             this.angle += Math.sign(diff) * Math.min(Math.abs(diff), 0.02)
-        }
-        this.speed = 2.0 * this.speedMult
-    }
-
-    // ИЗБЕГАНИЕ БОЛЬШОГО МЕТЕОРИТА
-    if (sim.bigMeteor) {
-      const distToBigMeteor = MathUtils.dist(this, sim.bigMeteor)
-      const avoidRadius = sim.bigMeteor.size + 150 // Радиус избегания для призрака
-      if (distToBigMeteor < avoidRadius && distToBigMeteor > 0) {
-        const avoidAngle = MathUtils.angle(sim.bigMeteor, this) // Угол от метеорита к призраку
-        const avoidForce = (1 - distToBigMeteor / avoidRadius) * 1.5 // Сила отталкивания
-        // Применяем силу избегания к скорости
-        const avoidVx = Math.cos(avoidAngle) * avoidForce
-        const avoidVy = Math.sin(avoidAngle) * avoidForce
-        // Добавляем к углу движения
-        const currentAngle = Math.atan2(Math.sin(this.angle) * this.speed + avoidVy, Math.cos(this.angle) * this.speed + avoidVx)
-        this.angle = currentAngle
       }
     }
 
-    // Движение головы
-    this.x += Math.cos(this.angle) * this.speed
-    this.y += Math.sin(this.angle) * this.speed
-    // Добавляем сегменты (с учетом размера!)
-    // Чем больше змея, тем "шире" волна
-    const wobble = Math.sin(Date.now() * 0.005 + this.wobbleOffset) * (3 * this.sizeMult)
-    const nextX = this.x + Math.cos(this.angle + Math.PI/2) * wobble
-    const nextY = this.y + Math.sin(this.angle + Math.PI/2) * wobble
-    this.segments.unshift({x: nextX, y: nextY})
-    // Длина хвоста тоже зависит от размера
-    const maxSegments = 40 * this.sizeMult
-    if (this.segments.length > maxSegments) {
-      this.segments.pop()
-    }
+    // --- ДВИЖЕНИЕ - используем сервис ---
+    EntityMovementService.applySerpentMovement(this, aiResult.angle, aiResult.speed, sim)
+    EntityMovementService.updateSerpentSegments(this, sim)
 
     // Удаление, если улетел далеко (в обычном режиме)
-    if (distFromCenter > 900) this.life -= 0.01
+    if (distFromCenterSq > (900 * 900)) this.life -= 0.01
     if (this.life <= 0) this.markedForDeletion = true
   }
 }

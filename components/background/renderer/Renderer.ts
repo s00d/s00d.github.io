@@ -15,17 +15,37 @@ import { applyGlow } from '../utils/glow'
 import { SHIP_STATE } from '../constants/states'
 import { UpgradeFactory } from '../upgrades/UpgradeFactory'
 import { HealthBar } from '../ui/HealthBar'
+import { NebulaBackground } from './NebulaBackground'
 
 export class Renderer {
   ctx: CanvasRenderingContext2D
+  nebulaBackground: NebulaBackground
 
   constructor(ctx: CanvasRenderingContext2D) {
     this.ctx = ctx
+    this.nebulaBackground = new NebulaBackground()
+  }
+
+  /**
+   * Отрисовывает туманность на фоне
+   * @param width - ширина экрана
+   * @param height - высота экрана
+   * @param time - текущее время в миллисекундах
+   * @param isExploding - происходит ли взрыв черной дыры
+   * @param shockRadius - радиус ударной волны
+   */
+  drawNebula(width: number, height: number, time: number, isExploding: boolean, shockRadius: number): void {
+    // Не рендерим туманность во время белой вспышки взрыва
+    if (isExploding && shockRadius < 100) {
+      return
+    }
+
+    // Рисуем туманность (без ускорения)
+    this.nebulaBackground.draw(this.ctx, width, height, time)
   }
 
   clear(width: number, height: number, warpFactor: number, isExploding: boolean, shockRadius: number) {
-    // Используем простую очистку без альфа-канала при взрыве для скорости
-    // Или простой цвет
+    // Полная очистка экрана
     if (isExploding) {
        // Просто белая вспышка, если радиус маленький, иначе черный
        if (shockRadius < 100) {
@@ -37,10 +57,21 @@ export class Renderer {
        this.ctx.fillStyle = CONFIG.COLORS.bg
        this.ctx.fillRect(0, 0, width, height)
     } else {
-       // Стандартный трейл эффект
-       this.ctx.fillStyle = `rgba(10, 10, 10, ${0.3 + (1 / warpFactor) * 0.7})`
+       // Полностью очищаем экран черным (туманность будет нарисована после)
+       this.ctx.fillStyle = '#000000'
        this.ctx.fillRect(0, 0, width, height)
     }
+  }
+
+  /**
+   * Накладывает трейл-эффект поверх туманности
+   * Использует более прозрачный эффект, чтобы туманность оставалась видимой
+   */
+  applyTrailEffect(width: number, height: number, warpFactor: number): void {
+    // Уменьшаем непрозрачность трейл-эффекта, чтобы туманность была видна даже при нормальной скорости
+    const trailAlpha = 0.15 + (1 / warpFactor) * 0.25 // Более прозрачный эффект
+    this.ctx.fillStyle = `rgba(10, 10, 10, ${trailAlpha})`
+    this.ctx.fillRect(0, 0, width, height)
   }
 
   drawBlackHole(bh: BlackHole) {
@@ -209,6 +240,77 @@ export class Renderer {
     this.ctx.beginPath(); this.ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2); this.ctx.fillStyle = m.color
     if (m.gravityFactor < 0) { this.ctx.shadowBlur = 8; this.ctx.shadowColor = m.color }
     this.ctx.fill(); this.ctx.shadowBlur = 0
+  }
+
+  /**
+   * Батчинг рендеринга метеоритов (группировка по цвету и типу)
+   */
+  drawMeteorsBatch(meteors: readonly Meteor[], warpFactor: number): void {
+    if (meteors.length === 0) return
+
+    // Группируем метеориты по цвету и типу (debris/normal)
+    const batches = new Map<string, Meteor[]>()
+    for (const m of meteors) {
+      if (m.markedForDeletion) continue
+      const key = `${m.color}|${m.isDebris ? 'debris' : 'normal'}`
+      if (!batches.has(key)) {
+        batches.set(key, [])
+      }
+      batches.get(key)!.push(m)
+    }
+
+    // Рендерим каждый батч
+    for (const [key, batch] of batches) {
+      if (batch.length === 0) continue
+
+      const parts = key.split('|')
+      const color = parts[0] || '#ffffff'
+      const isDebris = parts[1] === 'debris'
+
+      // Рендерим трейлы
+      this.ctx.strokeStyle = color
+      this.ctx.lineWidth = isDebris ? 2 : 1.5
+      this.ctx.globalAlpha = isDebris ? 0.8 : 0.4
+
+      for (const m of batch) {
+        if (m.trail.length > 1) {
+          const first = m.trail[0]
+          if (first) {
+            this.ctx.beginPath()
+            this.ctx.moveTo(first.x, first.y)
+            for (const t of m.trail) {
+              if (t) this.ctx.lineTo(t.x, t.y)
+            }
+            this.ctx.stroke()
+          }
+        }
+      }
+
+      this.ctx.globalAlpha = 1
+
+      // Рендерим тела метеоритов
+      this.ctx.fillStyle = color
+      this.ctx.beginPath()
+
+      for (const m of batch) {
+        this.ctx.moveTo(m.x + m.size, m.y)
+        this.ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2)
+      }
+
+      this.ctx.fill()
+
+      // Применяем свечение для отталкивающихся метеоритов
+      for (const m of batch) {
+        if (m.gravityFactor < 0) {
+          this.ctx.shadowBlur = 8
+          this.ctx.shadowColor = m.color
+          this.ctx.beginPath()
+          this.ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2)
+          this.ctx.fill()
+          this.ctx.shadowBlur = 0
+        }
+      }
+    }
   }
 
   drawBigMeteor(bm: BigMeteor, warpFactor: number) {
@@ -487,6 +589,55 @@ export class Renderer {
     const r = Math.max(0, p.size * p.life)
     this.ctx.beginPath(); this.ctx.arc(p.x, p.y, r, 0, Math.PI * 2)
     this.ctx.fillStyle = p.color; this.ctx.globalAlpha = p.life; this.ctx.fill(); this.ctx.globalAlpha = 1
+  }
+
+  /**
+   * Батчинг рендеринга частиц (группировка по цвету и альфе)
+   */
+  drawParticlesBatch(particles: readonly Particle[]): void {
+    if (particles.length === 0) return
+
+    // Группируем частицы по цвету и альфе для батчинга
+    const batches = new Map<string, Particle[]>()
+    for (const p of particles) {
+      if (p.markedForDeletion || p.life <= 0) continue
+      const r = Math.max(0, p.size * p.life)
+      if (r <= 0) continue
+
+      // Группируем по цвету и округленной альфе для лучшего батчинга
+      const alphaKey = Math.floor(p.life * 10) / 10
+      const key = `${p.color}|${alphaKey}`
+      if (!batches.has(key)) {
+        batches.set(key, [])
+      }
+      batches.get(key)!.push(p)
+    }
+
+    // Рендерим каждый батч
+    for (const [key, batch] of batches) {
+      if (batch.length === 0) continue
+
+      const parts = key.split('|')
+      const color = parts[0] || '#ffffff'
+      const alphaStr = parts[1] || '1'
+      const alpha = parseFloat(alphaStr)
+
+      this.ctx.fillStyle = color
+      this.ctx.globalAlpha = alpha
+      this.ctx.beginPath()
+
+      for (const p of batch) {
+        const r = Math.max(0, p.size * p.life)
+        if (r > 0) {
+          this.ctx.moveTo(p.x + r, p.y)
+          this.ctx.arc(p.x, p.y, r, 0, Math.PI * 2)
+        }
+      }
+
+      this.ctx.fill()
+    }
+
+    this.ctx.globalAlpha = 1
   }
 
   drawStars(stars: Star[], warpFactor: number) {

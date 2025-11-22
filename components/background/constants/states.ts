@@ -11,7 +11,8 @@ export const TARGET_TYPE = {
   SERPENT: 'SERPENT',
   SHIP: 'SHIP',
   POINT: 'POINT',
-  POWERUP: 'POWERUP'
+  POWERUP: 'POWERUP',
+  BIG_METEOR: 'BIG_METEOR'
 } as const
 
 // Боевые маневры

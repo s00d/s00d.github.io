@@ -19,16 +19,17 @@ export class DamageService {
     y: number,
     radius: number,
     damage: number,
-    serpents: VoidSerpent[]
+    serpents: readonly VoidSerpent[]
   ): Array<{ serpent: VoidSerpent, damage: number, pushAngle: number }> {
     const affected: Array<{ serpent: VoidSerpent, damage: number, pushAngle: number }> = []
 
+    const radiusSq = radius * radius
     for (const s of serpents) {
-      // Проверяем расстояние до каждого сегмента змеи, чтобы попасть наверняка
+      // Проверяем расстояние до каждого сегмента змеи, чтобы попасть наверняка (оптимизировано через distSq)
       let hit = false
       for (const seg of s.segments) {
-        const dist = MathUtils.dist({x, y}, seg)
-        if (dist < radius) {
+        const distSq = MathUtils.distSq({x, y}, seg)
+        if (distSq < radiusSq) {
           hit = true
           break
         }

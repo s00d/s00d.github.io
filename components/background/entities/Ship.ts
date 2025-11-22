@@ -13,10 +13,29 @@ import { RegenUpgrade } from '../upgrades/RegenUpgrade'
 import { CritService } from '../services/CritService'
 import { EconomyService } from '../services/EconomyService'
 import { GravityService } from '../services/GravityService'
+import { EffectService } from '../services/EffectService'
+import { TargetFinder } from '../services/TargetFinder'
 import { SHIP_STATE, TARGET_TYPE, COMBAT_MANEUVERS } from '../constants/states'
 import { ShipVisualGenerator, type ShipVisualConfig } from '../generators/ShipVisualGenerator'
+import type { TargetType } from '../services/TargetFinder'
+import { DamageApplicationService } from '../services/DamageApplicationService'
+import { DeathService } from '../services/DeathService'
+import { EffectSpawnService } from '../services/EffectSpawnService'
+import { EntityAIService } from '../services/EntityAIService'
+import { EntityMovementService } from '../services/EntityMovementService'
+import { EntityCombatService } from '../services/EntityCombatService'
 
 export class Ship extends Entity {
+  /**
+   * Проверяет, может ли корабль атаковать цель данного типа
+   * @param targetType - тип цели
+   * @returns true, если корабль может атаковать эту цель
+   */
+  static canAttack(targetType: TargetType): boolean {
+    return targetType === TARGET_TYPE.SERPENT ||
+           targetType === TARGET_TYPE.SHIP ||
+           targetType === TARGET_TYPE.BIG_METEOR
+  }
   // Визуальная конфигурация корабля
   visualConfig: ShipVisualConfig
   angle: number
@@ -30,7 +49,7 @@ export class Ship extends Entity {
   // Текущая цель навигации
   navTarget: {x: number, y: number} | null = null
   // Тип цели для отрисовки интерфейса
-  targetType: typeof TARGET_TYPE.SERPENT | typeof TARGET_TYPE.SHIP | typeof TARGET_TYPE.POINT | typeof TARGET_TYPE.POWERUP | null = null
+  targetType: TargetType = null
 
   wanderTarget: {x: number, y: number} | null = null
   combatTimer: number = 0
@@ -81,87 +100,14 @@ export class Ship extends Entity {
   }
 
   // Метод применения бонуса - использует фабрику апгрейдов
-  applyPowerUp(p: PowerUp) {
-    UpgradeFactory.apply(p.type, this)
+  applyPowerUp(p: PowerUp, sim: Simulation) {
+    UpgradeFactory.apply(p.type, this, sim)
   }
 
 
   // --- ГЛАВНЫЙ МЕТОД ПОИСКА ЦЕЛИ ---
-  private findBestTarget(sim: Simulation): { target: {x: number, y: number, vx?: number, vy?: number} | null, type: typeof TARGET_TYPE.SERPENT | typeof TARGET_TYPE.SHIP | typeof TARGET_TYPE.POINT | typeof TARGET_TYPE.POWERUP | null } {
-    // 0. Приоритет: БОНУСЫ (Жадность!)
-    // Ищем ближайший ХОРОШИЙ бонус
-    let closestBuff: PowerUp | null = null
-    let minBuffDist = Infinity
-
-    for (const p of sim.powerUps) {
-        if (!p.isGood) continue // Игнорируем плохие
-        const d = MathUtils.dist(this, p)
-        // Летим за бонусом, если он не на другом конце карты
-        if (d < minBuffDist && d < 500) {
-            minBuffDist = d
-            closestBuff = p
-        }
-    }
-    if (closestBuff) return { target: closestBuff, type: TARGET_TYPE.POWERUP }
-
-    // 1. Приоритет: БОЛЬШОЙ МЕТЕОРИТ (обычным оружием и бомбами)
-    if (sim.bigMeteor) {
-      const d = MathUtils.dist(this, sim.bigMeteor)
-      // Атакуем большой метеорит, если он в пределах досягаемости
-      if (d < 800) {
-        return { target: sim.bigMeteor, type: TARGET_TYPE.POINT }
-      }
-    }
-
-    // 2. Приоритет: ЗМЕИ (PvE)
-    // Ищем ближайшую змею
-    let closestSerpent: VoidSerpent | null = null
-    let minSerpentDist = Infinity
-
-    for (const serpent of sim.serpents) {
-      const d = MathUtils.dist(this, serpent)
-      if (d < minSerpentDist) {
-        minSerpentDist = d
-        closestSerpent = serpent
-      }
-    }
-
-    // Если змея найдена - это наша цель
-    if (closestSerpent && closestSerpent.segments.length > 0) {
-       // Целимся в голову
-       const head = closestSerpent.segments[0]
-       if (head) {
-         return { target: head, type: TARGET_TYPE.SERPENT }
-       }
-    }
-
-    // 3. Приоритет: ВРАЖЕСКИЕ КОРАБЛИ (PvP)
-    let closestShip: Ship | null = null
-    let minShipDist = Infinity
-
-    for (const other of sim.ships) {
-      if (other === this) continue
-      const d = MathUtils.dist(this, other)
-      if (d < minShipDist) {
-        minShipDist = d
-        closestShip = other
-      }
-    }
-
-    // Атакуем корабль, если он в радиусе радара (довольно далеко)
-    if (closestShip && minShipDist < 1000) {
-      return { target: closestShip, type: TARGET_TYPE.SHIP }
-    }
-
-    // 4. Приоритет: ПАТРУЛЬ (Waypoints)
-    if (!this.wanderTarget || MathUtils.dist(this, this.wanderTarget) < 100) {
-      const margin = 100
-      this.wanderTarget = {
-        x: MathUtils.randomRange(margin, sim.width - margin),
-        y: MathUtils.randomRange(margin, sim.height - margin)
-      }
-    }
-    return { target: this.wanderTarget, type: TARGET_TYPE.POINT }
+  private findBestTarget(sim: Simulation): { target: {x: number, y: number, vx?: number, vy?: number} | null, type: TargetType } {
+    return TargetFinder.findForShip(this, sim)
   }
 
   update(sim: Simulation) {
@@ -173,30 +119,8 @@ export class Ship extends Entity {
     this.reloadMult = EconomyService.getReloadMultiplier()
     this.isJammed = false
 
-    // Перебираем активные эффекты
-    this.sizeMult = 1.0 // Сброс перед пересчетом
-    for (let i = this.activeEffects.length - 1; i >= 0; i--) {
-        const eff = this.activeEffects[i]
-        if (!eff) {
-          this.activeEffects.splice(i, 1)
-          continue
-        }
-        eff.timer--
-
-        // Апгрейды напрямую изменяют свойства
-        const upgrade = UpgradeFactory.create(eff.type)
-        if (upgrade && upgrade.updateEffect) {
-          upgrade.updateEffect(this, eff)
-        }
-
-        if (eff.timer <= 0) {
-          this.activeEffects.splice(i, 1)
-          // Удаляем иконку при истечении эффекта
-          if (upgrade && upgrade.removeEffect) {
-            upgrade.removeEffect(this)
-          }
-        }
-    }
+    // Обработка эффектов через сервис
+    EffectService.updateEffects(this)
 
     // Если мы маленькие - мы быстрее!
     if (this.sizeMult < 1.0) this.speedMult *= 1.3
@@ -215,23 +139,24 @@ export class Ship extends Entity {
     // ЛОГИКА ТЕЛЕПОРТА (В бою)
     if (this.hasTeleport) {
       const teleportUpgrade = UpgradeFactory.create('GET_TELEPORT')
-      if (teleportUpgrade && 'tryTeleport' in teleportUpgrade) {
-        (teleportUpgrade as any).tryTeleport(this, sim)
+      if (teleportUpgrade) {
+        teleportUpgrade.tryTeleport(this, sim)
       }
     }
 
     const bh = sim.blackHole
-    const distToBH = MathUtils.dist(this, bh)
+    const distToBHSq = MathUtils.distSq(this, bh)
+    const distToBH = Math.sqrt(distToBHSq) // Вычисляем только если нужно
     const angleToBH = MathUtils.angle(this, bh)
 
     // 1. СМЕРТЬ
     if (GravityService.shouldDieFromShockwave(this, bh)) {
-      this.die(sim)
+      DeathService.handleShipDeath(this, sim)
       return
     }
     if (GravityService.shouldDieFromGravity(this, bh)) {
       bh.mass += CONFIG.MASS_GAIN_SHIP
-      this.die(sim)
+      DeathService.handleShipDeath(this, sim)
       return
     }
 
@@ -242,82 +167,33 @@ export class Ship extends Entity {
       this.vy += gravityPull.vy
     }
 
-    // 3. ПРИНЯТИЕ РЕШЕНИЙ (BRAIN)
-    const { target, type } = this.findBestTarget(sim)
-    this.navTarget = target
-    this.targetType = type
+    // 3. ПРИНЯТИЕ РЕШЕНИЙ (BRAIN) - используем сервис
+    const aiResult = EntityAIService.updateShipAI(this, sim)
+    this.state = aiResult.state
+    this.navTarget = aiResult.target
+    this.targetType = aiResult.targetType
+    const desiredAngle = aiResult.desiredAngle
+    const engineThrust = aiResult.engineThrust
 
-    let desiredAngle = this.angle
-    let engineThrust = 0.4
-
-    const panicDist = 180 + (bh.mass / CONFIG.CRITICAL_MASS) * 200
-
-    // A. ПАНИКА (Override всего)
-    if (bh.state !== BHState.EXPLODING && distToBH < panicDist) {
-      this.state = SHIP_STATE.PANIC
-      desiredAngle = MathUtils.angle(bh, this) // Строго от дыры
-      engineThrust = 1.0 // Максимальный форсаж
-    }
-    else if (target) {
-      // B. УМНАЯ НАВИГАЦИЯ К ЦЕЛИ
-      const distToTarget = MathUtils.dist(this, target)
-      const angleToTarget = MathUtils.angle(this, target)
-
-      // Проверяем, перекрывает ли черная дыра путь к цели
-      // (Простая проверка: если дыра ближе, чем цель, и угол совпадает)
-      const angleDiffBH = Math.abs(MathUtils.normalizeAngle(angleToTarget - angleToBH))
-      const isPathBlocked = distToBH < distToTarget && angleDiffBH < 0.8 // ~45 градусов
-
-      if (isPathBlocked && bh.state !== BHState.EXPLODING) {
-        // МАРШРУТИЗАЦИЯ: Огибаем дыру
-        // Если дыра слева, летим правее, и наоборот
-        const avoidDir = MathUtils.normalizeAngle(angleToBH - this.angle) > 0 ? -1 : 1
-        desiredAngle = angleToBH + (Math.PI / 2) * avoidDir // Летим по касательной
-        this.state = SHIP_STATE.ROAM // Мы пока просто летим
-      } else {
-        // Путь чист, выполняем боевую задачу или полет
-        // Проверяем, является ли цель большим метеоритом
-        const isBigMeteor = sim.bigMeteor && target === sim.bigMeteor
-
-        if (type === TARGET_TYPE.SERPENT || type === TARGET_TYPE.SHIP || isBigMeteor) {
-           this.state = SHIP_STATE.DOGFIGHT
-           const distToTarget = MathUtils.dist(this, target)
-           this.handleCombat(sim, target, distToTarget, type === TARGET_TYPE.SERPENT)
-           desiredAngle = this.combatManeuverAngle(target, distToTarget)
-
-           // Ускоряемся если цель далеко
-           engineThrust = distToTarget > 400 ? 0.7 : 0.5
-        } else {
-           this.state = SHIP_STATE.ROAM
-           desiredAngle = Navigator.getPathToTarget(this, target, bh)
-           engineThrust = 0.4
-        }
-      }
+    // 4. БОЕВАЯ ЛОГИКА - используем сервис
+    if (aiResult.target && (Ship.canAttack(aiResult.targetType) || (sim.bigMeteor && aiResult.target.x === sim.bigMeteor.x && aiResult.target.y === sim.bigMeteor.y))) {
+      const distToTarget = MathUtils.dist(this, aiResult.target)
+      const isSerpent = aiResult.targetType === TARGET_TYPE.SERPENT
+      EntityCombatService.updateShipCombat(this, aiResult.target, distToTarget, isSerpent, sim)
     }
 
-    // 4. ИЗБЕГАНИЕ СОЮЗНИКОВ (используем Navigator)
-    const push = Navigator.getAvoidanceVector(this, sim.ships, CONFIG.SHIP_SEPARATION)
-    this.vx += push.x * 0.5
-    this.vy += push.y * 0.5
+    // 5. ИЗБЕГАНИЕ СОЮЗНИКОВ - используем сервис
+    EntityMovementService.applyShipAvoidance(this, sim)
 
-    // 4.5. ИЗБЕГАНИЕ БОЛЬШОГО МЕТЕОРИТА
-    if (sim.bigMeteor) {
-      const distToBigMeteor = MathUtils.dist(this, sim.bigMeteor)
-      const avoidRadius = sim.bigMeteor.size + 100 // Радиус избегания
-      if (distToBigMeteor < avoidRadius && distToBigMeteor > 0) {
-        const avoidAngle = MathUtils.angle(sim.bigMeteor, this) // Угол от метеорита к кораблю
-        const avoidForce = (1 - distToBigMeteor / avoidRadius) * 2.0 // Сила отталкивания
-        this.vx += Math.cos(avoidAngle) * avoidForce
-        this.vy += Math.sin(avoidAngle) * avoidForce
-      }
-    }
+    // 6. ИЗБЕГАНИЕ БОЛЬШОГО МЕТЕОРИТА - используем сервис
+    EntityMovementService.applyShipBigMeteorAvoidance(this, sim)
 
-    // 5. REGEN UPGRADE (Наноботы)
+    // 7. REGEN UPGRADE (Наноботы)
     const regenUpgrade = RegenUpgrade.getInstance()
     const regenTimer = { value: this.regenTimer }
     if (regenUpgrade.updateRegen(this, regenTimer)) {
       // Эффект починки (маленькие зеленые плюсики/частицы)
-      sim.createExplosion(this.x, this.y, 2, '#10b981')
+      EffectSpawnService.createExplosion(this.x, this.y, 2, '#10b981', sim)
     }
     this.regenTimer = regenTimer.value
 
@@ -328,38 +204,13 @@ export class Ship extends Entity {
         this.maxShield = currentMaxShield
     }
 
-    // 6. ДВИЖЕНИЕ
-    this.cooldown--; this.bombCooldown--
-
-    let diff = MathUtils.normalizeAngle(desiredAngle - this.angle)
-    const turnSpeed = this.state === SHIP_STATE.DOGFIGHT ? CONFIG.SHIP_TURN_SPEED * 2.0 : CONFIG.SHIP_TURN_SPEED
-    this.angle += Math.sign(diff) * Math.min(Math.abs(diff), turnSpeed)
-
-    this.vx += Math.cos(this.angle) * engineThrust
-    this.vy += Math.sin(this.angle) * engineThrust
-    this.vx *= 0.96; this.vy *= 0.96
-
-    const speed = Math.hypot(this.vx, this.vy)
-    const maxSpeed = (this.state === SHIP_STATE.PANIC ? CONFIG.SHIP_SPEED * 2 : CONFIG.SHIP_SPEED) * this.speedMult
-    if (speed > maxSpeed) {
-      this.vx = (this.vx / speed) * maxSpeed
-      this.vy = (this.vy / speed) * maxSpeed
-    }
-
-    this.thrustPower = engineThrust
-    const warpMult = sim.warpFactor > 1.1 ? sim.warpFactor * 0.7 : 1
-    this.x += this.vx * warpMult
-    this.y += this.vy * warpMult
-
-    // Wrap
-    const m = 30
-    if (this.x < -m) this.x = sim.width + m; else if (this.x > sim.width + m) this.x = -m
-    if (this.y < -m) this.y = sim.height + m; else if (this.y > sim.height + m) this.y = -m
+    // 8. ДВИЖЕНИЕ - используем сервис
+    EntityMovementService.applyShipMovement(this, desiredAngle, engineThrust, sim)
   }
 
   // --- ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ БОЯ ---
 
-  private combatManeuverAngle(target: {x: number, y: number}, dist: number): number {
+  public combatManeuverAngle(target: {x: number, y: number}, dist: number): number {
       const angleToEnemy = MathUtils.angle(this, target)
 
       // Таймер смены тактики
@@ -377,6 +228,9 @@ export class Ship extends Entity {
   }
 
   private handleCombat(sim: Simulation, target: any, dist: number, isSerpent: boolean) {
+      // Оптимизация: используем distSq для сравнений
+      const distSq = dist * dist
+
       // Проверка на большой метеорит - атакуем обычным оружием и бомбами
       const isBigMeteor = sim.bigMeteor && target === sim.bigMeteor
 
@@ -393,8 +247,9 @@ export class Ship extends Entity {
         if (this.weapon.isReady && !this.isJammed) {
           const allowedAngle = this.weapon.getAllowedAngle()
           const range = this.weapon.getRange(CONFIG.SHIP_ENGAGEMENT_DIST)
+          const rangeSq = range * range
 
-          if (dist < range && aimDiff < allowedAngle) {
+          if (distSq < rangeSq && aimDiff < allowedAngle) {
             const critResult = CritService.calculateCritDamage(this.damageMult)
             this.weapon.fire(sim, this, leadAngle, critResult.damage, this.reloadMult)
           }
@@ -406,9 +261,9 @@ export class Ship extends Entity {
           const aimDiffBomb = Math.abs(MathUtils.normalizeAngle(angleToTarget - this.angle))
 
           // Стреляем бомбой, если смотрим на большой метеорит
-          if (dist < 600 && aimDiffBomb < 0.8) {
+          if (distSq < (600 * 600) && aimDiffBomb < 0.8) {
             const damage = this.bombLevel === 2 ? CONFIG.BOMB_DAMAGE * 2 : CONFIG.BOMB_DAMAGE
-            sim.spawnBomb(this.x, this.y, this.vx, this.vy, angleToTarget, this.bombLevel)
+            EffectSpawnService.spawnBomb(this.x, this.y, this.vx, this.vy, angleToTarget, this.bombLevel, sim)
             this.bombCooldown = 400
           }
         }
@@ -433,8 +288,9 @@ export class Ship extends Entity {
 
           // Дальность стрельбы
           const range = this.weapon.getRange(CONFIG.SHIP_ENGAGEMENT_DIST)
+          const rangeSq = range * range
 
-          if (dist < range && aimDiff < allowedAngle) {
+          if (distSq < rangeSq && aimDiff < allowedAngle) {
               // 4. CRIT UPGRADE
               const critResult = CritService.calculateCritDamage(this.damageMult)
               this.weapon.fire(sim, this, leadAngle, critResult.damage, this.reloadMult)
@@ -444,35 +300,15 @@ export class Ship extends Entity {
       // Кидаем бомбу в дыру (попутно), если смотрим на неё
       if (this.bombLevel > 0 && this.bombCooldown <= 0) {
         const bombUpgrade = UpgradeFactory.create('UPGRADE_BOMB')
-        if (bombUpgrade && 'tryFireBomb' in bombUpgrade) {
-          (bombUpgrade as any).tryFireBomb(this, sim)
+        if (bombUpgrade) {
+          bombUpgrade.tryFireBomb(this, sim)
         }
       }
   }
 
   takeDamage(sim: Simulation, damage: number = 1) {
-    sim.spawnDamageText(this.x, this.y, damage, false) // Урон по кораблю
-
-    // Сначала урон идет в щит
-    if (this.shield > 0) {
-        this.shield -= damage
-        // Эффект удара по щиту (синий)
-        sim.createExplosion(this.x, this.y, 5, CONFIG.COLORS.shield)
-        if (this.shield < 0) {
-            this.hp += this.shield // Переносим остаток урона на HP
-            this.shield = 0
-        }
-    } else {
-        this.hp -= damage
-        sim.createExplosion(this.x, this.y, 10, this.color)
-    }
-
-    if (this.hp <= 0) this.die(sim)
-  }
-
-  private die(sim: Simulation) {
-    sim.createExplosion(this.x, this.y, 50, this.color)
-    this.markedForDeletion = true
+    // Делегируем обработку урона в сервис
+    DamageApplicationService.applyDamageToShip(this, damage, sim)
   }
 }
 

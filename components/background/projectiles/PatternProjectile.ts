@@ -1,9 +1,8 @@
 import { Projectile } from './Projectile'
 import type { Simulation } from '../simulation'
-import type { Ship } from '../entities/Ship'
-import type { VoidSerpent } from '../entities/VoidSerpent'
 import { LinearProjectile } from './LinearProjectile'
 import { applyGlow, getPulsingGlow } from '../utils/glow'
+import { EffectSpawnService } from '../services/EffectSpawnService'
 
 export class PatternProjectile extends Projectile {
     pattern: 'WAVE' | 'PLASMA' | 'FLAK'
@@ -30,7 +29,8 @@ export class PatternProjectile extends Projectile {
              for(let i=0; i<6; i++) {
                  const a = Math.random()*Math.PI*2
                  const s = 6
-                 sim.projectiles.push(new LinearProjectile(this.x, this.y, Math.cos(a)*s, Math.sin(a)*s, this.color, 1, 1.5, 20))
+                 const projectile = sim.projectilePool.acquireLinear(this.x, this.y, Math.cos(a)*s, Math.sin(a)*s, this.color, 1, 1.5, 20)
+                 sim.projectiles.add(projectile)
              }
              this.markedForDeletion = true
              return
@@ -39,16 +39,26 @@ export class PatternProjectile extends Projectile {
         super.update(sim)
     }
 
-    // Plasma Piercing override
-    override onHitShip(sim: Simulation, ship: Ship) {
-        ship.takeDamage(sim, this.damage)
-        if (this.pattern !== 'PLASMA') this.markedForDeletion = true
-        else sim.createExplosion(this.x, this.y, 2, this.color)
+    /**
+     * PLASMA снаряды не удаляются после попадания
+     */
+    override shouldDeleteOnHit(): boolean {
+        return this.pattern !== 'PLASMA'
     }
 
-    override onHitSerpent(sim: Simulation, s: VoidSerpent) {
-        s.takeDamage(sim, this.damage)
-        if (this.pattern !== 'PLASMA') this.markedForDeletion = true
+    /**
+     * PLASMA снаряды создают маленький эффект при попадании
+     */
+    override createHitEffect(sim: Simulation, createDefaultEffect?: (x: number, y: number, color: string) => void): void {
+        if (this.pattern === 'PLASMA') {
+            EffectSpawnService.createExplosion(this.x, this.y, 2, this.color, sim)
+            // Не вызываем createDefaultEffect для PLASMA
+        } else {
+            // Для других паттернов используем стандартный эффект
+            if (createDefaultEffect) {
+                createDefaultEffect(this.x, this.y, this.color)
+            }
+        }
     }
 
     drawSpecific(ctx: CanvasRenderingContext2D) {
