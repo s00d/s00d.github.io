@@ -2,38 +2,53 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
+  # Build only (no deploy) so a broken build fails the PR.
+  pull_request:
+  workflow_dispatch:
+  # Rebuild daily so the project list (stars, new repos) stays fresh.
+  schedule:
+    - cron: '0 3 * * *'
 
 permissions:
   contents: write
 
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: 22
+          cache: pnpm
 
-      - name: Install Dependencies
-        run: npm ci
+      - name: Install
+        run: pnpm install --frozen-lockfile
 
-      - name: Generate Static Site
-        # Важно: передаем токен при сборке, чтобы API запрос прошел
+      - name: Generate
         env:
-          NUXT_GITHUB_TOKEN: ${{ secrets.GH_PAT }} 
-        run: npm run generate
+          # Built-in token is enough to lift the anonymous GitHub API rate limit.
+          NUXT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm generate
 
       - name: Add .nojekyll
-        run: |
-          touch .output/public/.nojekyll
+        if: github.event_name != 'pull_request'
+        run: touch .output/public/.nojekyll
 
-      - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Deploy to GitHub Pages
+        if: github.event_name != 'pull_request'
+        uses: crazy-max/ghaction-github-pages@v5
         with:
-          folder: .output/public
+          target_branch: gh-pages
+          build_dir: .output/public
+          jekyll: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

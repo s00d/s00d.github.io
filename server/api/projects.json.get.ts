@@ -1,88 +1,47 @@
-import { defineEventHandler, setResponseHeader } from 'h3'
+// Prerendered at build time into /api/projects.json; the page embeds the result in its payload.
+interface Repo {
+  id: number
+  name: string
+  description: string | null
+  stargazers_count: number
+  forks_count: number
+  language: string | null
+  html_url: string
+  homepage: string | null
+  topics?: string[]
+  fork: boolean
+  archived: boolean
+  pushed_at: string
+}
 
-export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const username = config.public.githubUsername
+export default defineEventHandler(async () => {
+  const { githubToken, public: { githubUsername } } = useRuntimeConfig()
+  const headers: Record<string, string> = { 'User-Agent': 's00d.github.io' }
+  if (githubToken) headers.Authorization = `Bearer ${githubToken}`
 
-  // Используем Nitro storage для персистентного кеша (сохраняется после перезапуска)
-  const storage = useStorage('cache')
-  const cacheKey = `github-projects-${username}`
-  const cacheTTL = 24 * 60 * 60 * 1000 // 24 часа в миллисекундах
-
-  // Устанавливаем заголовок для статической генерации
-  setResponseHeader(event, 'Content-Type', 'application/json')
-
-  try {
-    // Проверяем кеш
-    const cached = await storage.getItem(cacheKey) as { data: any[], timestamp: number } | null
-
-    if (cached && cached.timestamp) {
-      const age = Date.now() - cached.timestamp
-      if (age < cacheTTL) {
-        // Кеш валиден, возвращаем данные из кеша
-        console.log(`[Cache HIT] Returning cached projects (age: ${Math.round(age / 1000 / 60)} minutes)`)
-        return cached.data
-      }
-    }
-
-    // Кеш устарел или отсутствует, делаем запрос к GitHub
-    console.log('[Cache MISS] Fetching projects from GitHub API')
-
-    // Если токен не задан, GitHub ограничит запросы (60 в час), для локальной разработки ок
-    const headers: Record<string, string> = config.githubToken
-      ? { Authorization: `Bearer ${config.githubToken}` }
-      : {}
-
-    // 1. Получаем репозитории
-    const repos: any[] = await $fetch(`https://api.github.com/users/${username}/repos?per_page=100&type=owner`, {
-      headers
+  const repos: Repo[] = []
+  for (let page = 1; ; page++) {
+    const batch = await $fetch<Repo[]>(`https://api.github.com/users/${githubUsername}/repos`, {
+      headers,
+      query: { per_page: 100, type: 'owner', page },
     })
-
-    // 2. Фильтрация и сортировка
-    const projects = repos
-      .filter(repo => {
-        return (
-          repo.fork === false &&       // <--- ГЛАВНОЕ: Убирает форки
-          !repo.archived &&            // Убирает архивные
-          repo.name !== 's00d.github.io' // Убирает сам сайт портфолио
-        )
-      })
-      .sort((a, b) => b.stargazers_count - a.stargazers_count)
-      .slice(0, 30)
-      .map(repo => ({
-        id: repo.id,
-        name: repo.name,
-        description: repo.description,
-        stars: repo.stargazers_count,
-        forks: repo.forks_count,
-        language: repo.language,
-        url: repo.html_url,
-        homepage: repo.homepage,
-        topics: repo.topics || []
-      }))
-
-    // Сохраняем в кеш
-    await storage.setItem(cacheKey, {
-      data: projects,
-      timestamp: Date.now()
-    })
-
-    return projects
-  } catch (e) {
-    console.error('GitHub Fetch Error:', e)
-
-    // При ошибке пытаемся вернуть данные из кеша, даже если они устарели
-    try {
-      const cached = await storage.getItem(cacheKey) as { data: any[], timestamp: number } | null
-      if (cached && cached.data) {
-        console.log('[Cache FALLBACK] Returning stale cache due to API error')
-        return cached.data
-      }
-    } catch (cacheError) {
-      console.error('Cache read error:', cacheError)
-    }
-
-    return [] // Возвращаем пустой массив при ошибке, чтобы сайт не упал
+    repos.push(...batch)
+    if (batch.length < 100) break
   }
-})
 
+  return repos
+    .filter(r => !r.fork && !r.archived && r.name !== `${githubUsername}.github.io`)
+    .sort((a, b) => b.stargazers_count - a.stargazers_count)
+    .map(r => ({
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      stars: r.stargazers_count,
+      forks: r.forks_count,
+      language: r.language,
+      url: r.html_url,
+      homepage: r.homepage || null,
+      topics: r.topics ?? [],
+      pushedAt: r.pushed_at,
+    }))
+})

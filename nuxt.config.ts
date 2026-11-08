@@ -1,75 +1,46 @@
+// User site: GitHub Pages serves it from the root of https://s00d.github.io/.
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  modules: ['@nuxt/ui'],
 
-  // Для GitHub Pages
-  ssr: false,
-
-  modules: [
-    '@nuxtjs/tailwindcss',
-    '@nuxtjs/color-mode',
-    '@nuxt/icon',
-    '@nuxtjs/google-fonts',
-    '@vueuse/nuxt'
-  ],
-
-  colorMode: {
-    classSuffix: '',
-    preference: 'dark', // По умолчанию темная тема
-    fallback: 'dark'
-  },
-
-  googleFonts: {
-    families: {
-      'Inter': [400, 500, 600, 700],
-      'JetBrains Mono': [400, 500]
-    },
-    display: 'swap'
-  },
+  css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
-    // Секретный токен только на сервере (создай .env файл локально)
-    githubToken: process.env.NUXT_GITHUB_TOKEN,
-    public: {
-      githubUsername: 's00d'
-    }
-  },
-
-  // Конфигурация для @nuxt/icon
-  icon: {
-    // Для SPA режима (ssr: false) включаем сканирование компонентов
-    // чтобы иконки были в клиентском бандле
-    clientBundle: {
-      scan: true
-    }
-  },
-
-  // Настройка Nitro storage для персистентного кеша
-  nitro: {
-    storage: {
-      cache: {
-        driver: 'fs',
-        base: './.cache'
-      }
-    },
-    prerender: {
-      // Предварительно рендерим API роут для сохранения данных как JSON
-      routes: ['/api/projects.json'],
-      crawlLinks: false
-    }
+    // Build-time only: lifts the anonymous GitHub API rate limit.
+    githubToken: '',
+    public: { githubUsername: 's00d' },
   },
 
   app: {
     head: {
-      title: "Pavel Kuz'min | Creative Developer",
+      htmlAttrs: { lang: 'en' },
+      title: "Pavel Kuz'min — developer",
       meta: [
-        { name: 'description', content: 'Backend & Frontend Developer Portfolio. Open Source enthusiast.' },
-        { name: 'theme-color', content: '#0a0a0a' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover' }
+        { name: 'description', content: "Pavel Kuz'min (s00d): backend & frontend developer. Open source projects, links and contacts." },
+        { property: 'og:title', content: "Pavel Kuz'min — developer" },
+        { property: 'og:image', content: 'https://s00d.github.io/android-chrome-512x512.png' },
       ],
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.ico' }
-      ]
-    }
-  }
-})
+        { rel: 'icon', href: '/favicon.ico' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/site.webmanifest' },
+      ],
+    },
+  },
 
+  icon: {
+    // Bundle every icon so the static site never asks the Iconify API at runtime.
+    clientBundle: { scan: true, sizeLimitKb: 512 },
+  },
+
+  colorMode: { preference: 'system' },
+
+  nitro: {
+    prerender: {
+      routes: ['/', '/api/projects.json'],
+      crawlLinks: false,
+      failOnError: true,
+    },
+  },
+
+  compatibilityDate: '2025-11-03',
+})
