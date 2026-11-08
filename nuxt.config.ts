@@ -20,7 +20,8 @@ export default defineNuxtConfig({
         { property: 'og:image', content: 'https://s00d.github.io/android-chrome-512x512.png' },
       ],
       link: [
-        { rel: 'icon', href: '/favicon.ico' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
         { rel: 'manifest', href: '/site.webmanifest' },
       ],
